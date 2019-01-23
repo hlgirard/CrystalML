@@ -7,6 +7,24 @@ import pickle
 
 
 class ImageClassifier(tk.Frame):
+    """
+    Manually label images from a folder into arbitrary categories
+    
+    Parameters
+    ----------
+    parent : tkinter.TK()
+        tkinter instance
+    directory : string
+        Directory to explore for the images to label (must contain only image files)
+    categories : list[string]
+        Disting categories to use for labelling
+
+    Notable attributes
+    -------
+    labelled : dict(string: string)
+        Dictionary containing the labels in the form {'image_name.jpg': label}
+        This dict is saved to disk by the 'Save' button
+    """
 
     def __init__(self, parent, directory, categories, *args, **kwargs):
 
@@ -15,7 +33,7 @@ class ImageClassifier(tk.Frame):
         self.root = parent
         self.root.wm_title("Manual Image labelling")
 
-        # Dimensions
+        # Window Dimensions
         self.winwidth = 1000
         self.imwidth = self.winwidth - 10
         self.imheight = int(self.imwidth // 1.5)
@@ -32,7 +50,7 @@ class ImageClassifier(tk.Frame):
         # Initialize data
         self.initialize_data()
 
-        # Make a frame for global control buttons
+        # Make a frame for global control buttons (at the top of the window)
         self.frame0 = tk.Frame(self.root, width=self.winwidth, height=10, bd=2)
         self.frame0.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -44,8 +62,8 @@ class ImageClassifier(tk.Frame):
         self.cv1 = tk.Canvas(self.frame1, width=self.imwidth, height=self.imheight, background="white", bd=1, relief=tk.RAISED)
         self.cv1.pack(in_=self.frame1)
 
-        # Make a frame to display the labelling buttons
-        self.frame2 = tk.Frame(self.root, width=1000, height=10, bd=2)
+        # Make a frame to display the labelling buttons (at the bottom)
+        self.frame2 = tk.Frame(self.root, width=self.winwidth, height=10, bd=2)
         self.frame2.pack(side = tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         # Create the global buttons
@@ -60,9 +78,11 @@ class ImageClassifier(tk.Frame):
         for category in self.categories:
             tk.Button(self.root, text=category, height=2, width=8, command = partial(self.classify, category)).pack(in_=self.frame2, fill = tk.X, expand = True, side = tk.LEFT)
 
-        self.next_image()
+        #Display the first image
+        self.display_image()
 
     def initialize_data(self):
+        '''Loads existing data from disk if it exits and loads a list of unlabelled images found in the directory'''
         # Initialize dictionary
         if os.path.isfile(self.savepath):
             self.labeled = self.load_dict(self.savepath)
@@ -75,7 +95,7 @@ class ImageClassifier(tk.Frame):
         # Build list of images to classify
         self.image_list = []
         for d in os.listdir(self.folder):
-            if d not in self.labeled: 
+            if d not in self.labeled and not d.endswith('.pkl'): 
                 self.image_list.append(d)
         print("{} images ready to label".format(len(self.image_list)))
 
@@ -84,75 +104,80 @@ class ImageClassifier(tk.Frame):
         self.max_count = len(self.image_list)-1
 
     def classify(self, category):
+        '''Adds a directory entry with the name of the image and the label selected'''
         self.labeled[self.image_list[self.counter]] = category
         print('Label {} selected for image {}'.format(category, self.image_list[self.counter]))
         self.counter += 1
-        self.next_image()
+        self.display_image()
     
     def previous_image(self):
-        self.counter += -1
-        self.next_image()
+        '''Displays the previous image'''
+        if self.counter > 0:
+            self.counter += -1
+            self.display_image()
 
-    def next_image(self):
+    def display_image(self):
+        '''Displays the image corresponding to the current value of the counter'''
         if self.counter > self.max_count:
             print("No more images")
         else:
-            im = Image.open("{}{}".format(self.folder + '/', self.image_list[self.counter]))
-            if (self.imwidth-im.size[0])<(self.imheight-im.size[1]):
+            self.im = Image.open("{}{}".format(self.folder + '/', self.image_list[self.counter]))
+            if (self.imwidth-self.im.size[0])<(self.imheight-self.im.size[1]):
                 width = self.imwidth
-                height = width*im.size[1]/im.size[0]
-                self.display(height, width)
+                height = width*self.im.size[1]/self.im.size[0]
             else:
                 height = self.imheight
-                width = height*im.size[0]/im.size[1]
-                self.display(height, width)
-
-    def display(self, height, width):
-        self.im = Image.open("{}{}".format(self.folder + '/', self.image_list[self.counter]))
-        self.im.thumbnail((width, height), Image.ANTIALIAS)
-        self.root.photo = ImageTk.PhotoImage(self.im)
-        self.photo = ImageTk.PhotoImage(self.im)
-
-        if self.counter == 0:
-            self.cv1.create_image(0, 0, anchor = 'nw', image = self.photo)
-
-        else:
+                width = height*self.im.size[0]/self.im.size[1]
+            
             self.im.thumbnail((width, height), Image.ANTIALIAS)
-            self.cv1.delete("all")
-            self.cv1.create_image(0, 0, anchor = 'nw', image = self.photo)
+            self.root.photo = ImageTk.PhotoImage(self.im)
+            self.photo = ImageTk.PhotoImage(self.im)
+
+            if self.counter == 0:
+                self.cv1.create_image(0, 0, anchor = 'nw', image = self.photo)
+
+            else:
+                self.im.thumbnail((width, height), Image.ANTIALIAS)
+                self.cv1.delete("all")
+                self.cv1.create_image(0, 0, anchor = 'nw', image = self.photo)
 
     
     def save(self):
+        '''Save the labeled dictionary to disk'''
         self.dump_dict(self.labeled, self.savepath)
         print("Saved data to file")
     
     def load_dict(self, file):
+        '''Read a pickeled dictionary from file'''
         with open(file,"rb") as f:
             return pickle.load(f)
     
     def dump_dict(self, dict, file):
+        '''Pickle a dictionary to file'''
         with open(file, 'wb') as f:
             pickle.dump(dict, f, pickle.HIGHEST_PROTOCOL)
             f.close()
 
     def reset_session(self):
+        '''Deletes all labels from the current session and reload the images'''
         result = askquestion('Are you sure?', 'Delete data since last save?', icon = 'warning')
         if result == 'yes':
             print("Resetting session since last save and reinitializing date")
             self.labeled = {}
             self.initialize_data()
-            self.next_image()
+            self.display_image()
         else:
             pass
     
     def delete_saved_data(self):
+        '''Deletes all labeles from session and saved data then reloads the images'''
         result = askquestion('Are you sure?', 'Delete all saved and session data?', icon = 'warning')
         if result == 'yes':
             print("Deleting all saved progress and reinitializing data")
             if os.path.isfile(self.savepath):
                 os.remove(self.savepath)
             self.initialize_data()
-            self.next_image()
+            self.display_image()
         else:
             pass
 
