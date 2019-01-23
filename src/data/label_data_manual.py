@@ -130,14 +130,12 @@ class ImageClassifier(tk.Frame):
                 width = height*self.im.size[0]/self.im.size[1]
             
             self.im.thumbnail((width, height), Image.ANTIALIAS)
-            self.root.photo = ImageTk.PhotoImage(self.im)
             self.photo = ImageTk.PhotoImage(self.im)
 
             if self.counter == 0:
                 self.cv1.create_image(0, 0, anchor = 'nw', image = self.photo)
 
             else:
-                self.im.thumbnail((width, height), Image.ANTIALIAS)
                 self.cv1.delete("all")
                 self.cv1.create_image(0, 0, anchor = 'nw', image = self.photo)
 
