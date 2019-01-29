@@ -108,3 +108,6 @@ venv.bak/
 
 # Trained model is confidential
 /models
+
+# VS code
+.vscode
