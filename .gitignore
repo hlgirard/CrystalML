@@ -104,10 +104,7 @@ venv.bak/
 .mypy_cache/
 
 # Data is confidential
-/data
-
-# Trained model is confidential
-/models
+/data/*
 
 # VS code
 .vscode
