@@ -4,7 +4,12 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_im
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense
+from tensorflow.keras.callbacks import TensorBoard
 
+from time import time
+
+from src.visualization.plot_history import plot_history_keras
+from src.visualization.plot_history import training_plot
 
 ## Define the model
 
@@ -73,11 +78,19 @@ validation_generator = test_datagen.flow_from_directory(
         batch_size=batch_size,
         class_mode='binary')
 
-model.fit_generator(
+model.summary()
+
+tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
+trainingPlot = training_plot.TrainingPlot()
+
+training_history = model.fit_generator(
         train_generator,
         steps_per_epoch=2000 // batch_size,
         epochs=50,
         validation_data=validation_generator,
-        validation_steps=800 // batch_size)
+        validation_steps=800 // batch_size,
+        callbacks = [tensorboard, trainingPlot])
 
 model.save_weights('models/first_try.h5')
+
+plot_history_keras(training_history)

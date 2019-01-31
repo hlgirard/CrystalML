@@ -5,6 +5,8 @@ from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras import applications
 from tensorflow.keras.optimizers import SGD
 
+from src.visualization.plot_history import plot_history_keras
+
 # dimensions of our images.
 img_width, img_height = 250, 150
 
@@ -69,13 +71,17 @@ def train_top_model():
     model.compile(optimizer='rmsprop',
                   loss='binary_crossentropy', metrics=['accuracy'])
 
-    model.fit(train_data, train_labels,
+    training_history = model.fit(train_data, train_labels,
               epochs=epochs,
               batch_size=batch_size,
               validation_data=(validation_data, validation_labels))
 
     model.save_weights(top_model_weights_path)
 
+    return training_history
+
 
 save_bottlebeck_features()
-train_top_model()
+history = train_top_model()
+
+plot_history_keras(history)
