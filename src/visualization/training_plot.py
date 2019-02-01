@@ -1,10 +1,10 @@
 import matplotlib
 import matplotlib.pyplot as plt
-import keras
+import tensorflow.keras
 import numpy as np
 import seaborn as sns
 
-class TrainingPlot(keras.callbacks.Callback):
+class TrainingPlot(tensorflow.keras.callbacks.Callback):
 
     # This function is called when the training begins
     def on_train_begin(self, logs={}):
@@ -19,6 +19,8 @@ class TrainingPlot(keras.callbacks.Callback):
         sns.set_style("ticks")
         sns.set_context("talk")
         sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
+        plt.ion()
+        plt.show()
 
     # This function is called at the end of each epoch
     def on_epoch_end(self, epoch, logs={}):
@@ -41,9 +43,10 @@ class TrainingPlot(keras.callbacks.Callback):
             plt.plot(N, self.acc, label = "train_acc")
             plt.plot(N, self.val_losses, label = "val_loss")
             plt.plot(N, self.val_acc, label = "val_acc")
-            plt.title("Training Loss and Accuracy [Epoch {}]".format(epoch))
+            plt.title("Training Loss and Accuracy")
+            plt.ylim(0, 1.4)
             plt.xlabel("Epoch #")
             plt.ylabel("Loss/Accuracy")
             plt.legend()
-            plt.show()
-plt.close()
+            plt.draw()
+            plt.pause(0.001)

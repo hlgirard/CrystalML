@@ -9,7 +9,7 @@ from tensorflow.keras.callbacks import TensorBoard
 from time import time
 
 from src.visualization.plot_history import plot_history_keras
-from src.visualization.plot_history import training_plot
+from src.visualization.training_plot import TrainingPlot
 
 ## Define the model
 
@@ -81,7 +81,7 @@ validation_generator = test_datagen.flow_from_directory(
 model.summary()
 
 tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
-trainingPlot = training_plot.TrainingPlot()
+trainingPlot = TrainingPlot()
 
 training_history = model.fit_generator(
         train_generator,
