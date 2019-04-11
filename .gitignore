@@ -106,6 +106,7 @@ venv.bak/
 # Data is confidential
 /data/*
 /logs
+example_data/
 
 # VS code
 .vscode
