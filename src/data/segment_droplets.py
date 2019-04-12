@@ -1,4 +1,5 @@
 from math import sqrt
+import os
 
 import numpy as np
 
@@ -14,16 +15,22 @@ from skimage.morphology import binary_closing, remove_small_holes, disk
 
 from scipy import ndimage as ndi
 
-import os
+from tqdm import tqdm
+
+from utils import select_rectangle
 
 def open_grey_scale_image(path):
     '''Opens an image and converts it to ubyte and greyscale'''
-    f = io.imread(path)
+    try:
+        f = io.imread(path)
+    except OSError:
+        print("No such file: {}".format(path))
+        raise OSError
     return img_as_ubyte(rgb2gray(f))
 
 def crop(img, cBox):
     '''Returns a cropped image for cBox = (minRow, maxRow, minCol, maxCol)'''
-    (minRow, maxRow, minCol, maxCol) = cBox
+    (minRow, minCol, maxRow, maxCol) = cBox
     return img[minRow:maxRow, minCol:maxCol]
 
 def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 2, rm_holes_area = 2048, minima_minDist = 100, mask_val = 0.15):
@@ -124,5 +131,52 @@ def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.75):
             img_list.append(img[np.max([min_row-border,0]):np.min([max_row+border,max_row]),np.max([min_col-border,0]):np.min([max_col+border,max_col])])
 
     return img_list
+
+def segment_droplets_to_file(image_filename, crop_box = None):
+
+    if os.path.isdir(image_filename):
+        img_list = [os.path.join(image_filename,f) for f in os.listdir(image_filename) if f.endswith('.JPG')]
+    elif os.path.isfile(image_filename):
+        img_list = [image_filename]
+
+    # Get the crop box from the first image if not provided
+    print('Getting crop box from image {}'.format(img_list[0]))
+    if not crop_box:
+        crop_box = select_rectangle(open_grey_scale_image(img_list[0]))
+
+    for image_file in tqdm(img_list):
+        print("Processing {}".format(image_file))
+        # Open image
+        image = open_grey_scale_image(image_file)
+
+        # Obtain crop box from user if not passed as argument
+        if not crop_box:
+            crop_box = select_rectangle(image)
+
+        # Crop image
+        cropped = crop(image, crop_box)
+        print('Cropped image shape: {}'.format(cropped.shape))
+
+        # Segment image
+        (labeled, num_maxima, num_regions) = segment(cropped)
+        print("Segmentation yielded {} maximas and {} regions".format(num_maxima, num_regions))
+
+        # Extract individual droplets
+        drop_images = extract_indiv_droplets(cropped, labeled)
+
+        # Output folder has the same name as the image by default
+        out_directory = image_file.split('.')[0] + '/'
+
+        # Save all the images in the output directory
+        print('Writing images to {}'.format(out_directory))
+        for (i, img) in enumerate(drop_images):
+            name = out_directory + image_file.split('.')[0].split('/')[-1] + '_drop_' + str(i) + '.jpg'
+            io.imsave(name, img)
+    
+if __name__ == '__main__':
+
+    path = 'notebooks/example_data'
+    segment_droplets_to_file(path)
+
 
 

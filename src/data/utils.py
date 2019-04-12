@@ -11,6 +11,7 @@ class RectangleSelection(object):
 
         #Setup the figure
         self.fig, self.ax = plt.subplots()
+        plt.ion
         plt.imshow(self.img, cmap='gray')
 
         self.RS = RectangleSelector(self.ax, self.onselect,
