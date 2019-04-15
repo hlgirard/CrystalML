@@ -1,4 +1,3 @@
-from tensorflow import keras
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 from tensorflow.keras.models import Sequential
@@ -8,15 +7,18 @@ from tensorflow.keras.callbacks import TensorBoard
 
 from time import time
 
-from src.visualization.plot_history import plot_history_keras
-from src.visualization.training_plot import TrainingPlot
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
+#from src.visualization.plot_history import plot_history_keras
+#from src.visualization.training_plot import TrainingPlotPlotly
 
 ## Define the model
 
 model = Sequential()
 
 # 1st layer convolutional
-model.add(Conv2D(32, (3, 3), input_shape=(150, 225 , 3)))
+model.add(Conv2D(32, (3, 3), input_shape=(150, 150 , 3)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -51,37 +53,34 @@ model.compile(loss='binary_crossentropy',
 
 batch_size = 16
 
-# this is the augmentation configuration we will use for training
+# this is the augmentation configuration we will use
 train_datagen = ImageDataGenerator(
         rescale=1./255,
-        shear_range=0.2,
-        zoom_range=0.2,
-        horizontal_flip=True)
+        validation_split = 0.2)
 
-# this is the augmentation configuration we will use for testing:
-# only rescaling
-test_datagen = ImageDataGenerator(rescale=1./255)
 
 # this is a generator that will read pictures found in
 # subfolers of 'data/train', and indefinitely generate
 # batches of augmented image data
 train_generator = train_datagen.flow_from_directory(
-        'data/train',  # this is the target directory
-        target_size=(150, 225),  # all images will be resized to 150x225
+        'data/labelled',  # this is the target directory
+        target_size=(150, 150),  # all images will be resized to 150x225
         batch_size=batch_size,
-        class_mode='binary')  # since we use binary_crossentropy loss, we need binary labels
+        class_mode='binary', # since we use binary_crossentropy loss, we need binary labels
+        subset = 'training')  
 
 # this is a similar generator, for validation data
-validation_generator = test_datagen.flow_from_directory(
-        'data/validation',
-        target_size=(150, 225),
+validation_generator = train_datagen.flow_from_directory(
+        'data/labelled',
+        target_size=(150, 150),
         batch_size=batch_size,
-        class_mode='binary')
+        class_mode='binary',
+        subset = 'validation')
 
 model.summary()
 
 tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
-trainingPlot = TrainingPlot()
+#trainingPlot = TrainingPlotPlotly()
 
 training_history = model.fit_generator(
         train_generator,
@@ -89,8 +88,13 @@ training_history = model.fit_generator(
         epochs=50,
         validation_data=validation_generator,
         validation_steps=800 // batch_size,
-        callbacks = [tensorboard, trainingPlot])
+        callbacks = [tensorboard])#, trainingPlot])
 
-model.save_weights('models/first_try.h5')
+# Save Model to JSON
+model_json = model.to_json()
+with open("models/cnn-simple-model.json", "w") as json_file:
+    json_file.write(model_json)
+# Save weigths
+model.save_weights('models/cnn-simple-model-{}.h5'.format(time()))
 
-plot_history_keras(training_history)
+#plot_history_keras(training_history)
