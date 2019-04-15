@@ -1,7 +1,10 @@
+from datetime import datetime
+
 import matplotlib as mpl
 mpl.use('TkAgg')
 from matplotlib.widgets import RectangleSelector
 from matplotlib import pyplot as plt
+from PIL import Image
 
 class RectangleSelection(object):
     def __init__(self, img):
@@ -34,8 +37,7 @@ class RectangleSelection(object):
     def toggle_selector(self, event):
         if event.key in ['Q', 'q'] and self.RS.active:
             self.RS.set_active(False)
-        if event.key in ['A', 'a'] and not self.RS.active:
-            self.RS.set_active(True)
+            plt.close('all')
 
 def select_rectangle(img):
     """
@@ -56,6 +58,10 @@ def select_rectangle(img):
 
     selector = RectangleSelection(img)
 
-    plt.close(selector.fig)
+    plt.close('all')
 
     return selector.rectangle
+
+def get_date_taken(path):
+    '''Return the date image was taken from EXIF data'''
+    return datetime.strptime(Image.open(path)._getexif()[36867],  '%Y:%m:%d %H:%M:%S')

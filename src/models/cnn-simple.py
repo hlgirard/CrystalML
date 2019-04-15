@@ -18,7 +18,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 model = Sequential()
 
 # 1st layer convolutional
-model.add(Conv2D(32, (3, 3), input_shape=(150, 150 , 3)))
+model.add(Conv2D(32, (3, 3), input_shape=(150, 150 , 1)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -66,6 +66,7 @@ train_generator = train_datagen.flow_from_directory(
         'data/labelled',  # this is the target directory
         target_size=(150, 150),  # all images will be resized to 150x225
         batch_size=batch_size,
+        color_mode = 'grayscale',
         class_mode='binary', # since we use binary_crossentropy loss, we need binary labels
         subset = 'training')  
 
@@ -74,6 +75,7 @@ validation_generator = train_datagen.flow_from_directory(
         'data/labelled',
         target_size=(150, 150),
         batch_size=batch_size,
+        color_mode = 'grayscale',
         class_mode='binary',
         subset = 'validation')
 

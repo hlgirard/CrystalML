@@ -8,25 +8,26 @@ from skimage import io, exposure, img_as_ubyte
 from skimage.exposure import equalize_adapthist
 from skimage.color import rgb2gray
 from skimage.feature import peak_local_max
-from skimage.filters import threshold_minimum
+from skimage.filters import threshold_minimum, threshold_otsu
 from skimage.segmentation import watershed
 from skimage.measure import label, regionprops
 from skimage.morphology import binary_closing, remove_small_holes, disk
+import cv2
 
 from scipy import ndimage as ndi
 
 from tqdm import tqdm
 
-from utils import select_rectangle
+from src.data.utils import select_rectangle
 
 def open_grey_scale_image(path):
     '''Opens an image and converts it to ubyte and greyscale'''
     try:
-        f = io.imread(path)
+        f = cv2.imread(path, 0)
     except OSError:
         print("No such file: {}".format(path))
         raise OSError
-    return img_as_ubyte(rgb2gray(f))
+    return f
 
 def crop(img, cBox):
     '''Returns a cropped image for cBox = (minRow, maxRow, minCol, maxCol)'''
@@ -64,7 +65,13 @@ def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 2, rm_holes_area =
     img_adapteq = equalize_adapthist(img, clip_limit = exp_clip_limit)
 
     # Minimum threshold
-    binary = img_adapteq > threshold_minimum(img_adapteq)
+    try:
+        threshold = threshold_minimum(img_adapteq)
+    except:
+        # If unable to find a minimum threshold, try OTSU
+        threshold = threshold_otsu(img_adapteq)
+
+    binary = img_adapteq > threshold
 
     # Remove dark spots and connect bright spots
     closed = binary_closing(binary, selem=disk(closing_disk_radius))
@@ -128,7 +135,10 @@ def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.75):
     for region in reg:
         if region.eccentricity < ecc_cutoff:
             (min_row, min_col, max_row, max_col) = region.bbox
-            img_list.append(img[np.max([min_row-border,0]):np.min([max_row+border,max_row]),np.max([min_col-border,0]):np.min([max_col+border,max_col])])
+            drop_image = img[np.max([min_row-border,0]):np.min([max_row+border,max_row]),np.max([min_col-border,0]):np.min([max_col+border,max_col])]
+            resized = cv2.resize(drop_image, (150,150)) * 1./255
+            expanded_dim = np.expand_dims(resized, axis=2)
+            img_list.append(expanded_dim)
 
     return img_list
 

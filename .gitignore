@@ -108,6 +108,7 @@ venv.bak/
 /logs
 example_data/
 profile.txt
+temp-plot.html
 
 # VS code
 .vscode
