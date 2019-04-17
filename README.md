@@ -1,4 +1,7 @@
 # CrystalML
+
+![Travis CI status](https://travis-ci.com/hlgirard/CrystalML.svg?branch=master)
+
 Machine learning based tool to detect crystals in droplets from brightfield images.
 
 ## Credit
