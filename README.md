@@ -2,7 +2,7 @@
 
 ![Travis CI status](https://travis-ci.com/hlgirard/CrystalML.svg?branch=master)
 
-Integrated tool to measure the nucleation rate of protein crystals from the dynamics of an array of independent identical droplets.
+Integrated tool to measure the nucleation rate of protein crystals from the crystallization kinetics of an array of independent identical droplets.
 
 From a directory containing a time-series of images of mutliple droplets, the tool segments individual droplet and uses a pre-trained CNN model to determine the presence or absence of crystals in each drop.
 The nucleation rate is evaluated from the rate of decay of the proportion of drops that _do not_ exhibit visible crystals.
@@ -11,7 +11,7 @@ The nucleation rate is evaluated from the rate of decay of the proportion of dro
 
 ## Repository strutcture
 
-- `bin`: binaries for useful scripts
+- `bin`: useful scripts
 - `models`: pre-trained machine learning models for crystal presence discrimination
 - `notebooks`: jupyer notebooks evaluating different image segmentation strategies
 - `src`: source code for the project
