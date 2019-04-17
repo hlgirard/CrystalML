@@ -79,8 +79,8 @@ def plot_crystal_data(df, directory):
         x = df["RelTime"],
         y = df["Num drops"],
         name = 'Total',
-        hoverinfo = 'text',
-        text = df["Image Name"]
+        #hoverinfo = 'text',
+        #text = df["Image Name"]
     ), 2, 1)
 
     fig.append_trace(go.Scatter(
