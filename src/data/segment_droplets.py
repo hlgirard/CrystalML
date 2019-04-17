@@ -22,11 +22,9 @@ from src.data.utils import select_rectangle
 
 def open_grey_scale_image(path):
     '''Opens an image and converts it to ubyte and greyscale'''
-    try:
-        f = cv2.imread(path, 0)
-    except OSError:
-        print("No such file: {}".format(path))
-        raise OSError
+    f = cv2.imread(path, 0)
+    if f is None:
+        raise OSError("File does not exist or is not an image: {}".format(path))
     return f
 
 def crop(img, cBox):
