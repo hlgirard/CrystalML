@@ -17,10 +17,12 @@ class TestOpenImage(unittest.TestCase):
 
 class TestCrop(unittest.TestCase):
 
+    def setUp(self):
+        self.empty_img = open_grey_scale_image('tests/test_images/empty_droplets.JPG')
+
     def test_crop(self):
-        empty_img = open_grey_scale_image('tests/test_images/empty_droplets.JPG')
         crop_box = (250,500,2350,4000)
-        cropped = crop(empty_img, crop_box)
+        cropped = crop(self.empty_img, crop_box)
         self.assertEqual(cropped.shape, (2100, 3500))
 
 class TestUtils(unittest.TestCase):
