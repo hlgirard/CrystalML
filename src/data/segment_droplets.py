@@ -63,11 +63,7 @@ def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 2, rm_holes_area =
     img_adapteq = equalize_adapthist(img, clip_limit = exp_clip_limit)
 
     # Minimum threshold
-    try:
-        threshold = threshold_minimum(img_adapteq)
-    except:
-        # If unable to find a minimum threshold, try OTSU
-        threshold = threshold_otsu(img_adapteq)
+    threshold = threshold_otsu(img_adapteq)
 
     binary = img_adapteq > threshold
 

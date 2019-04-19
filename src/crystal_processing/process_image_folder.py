@@ -1,5 +1,7 @@
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True' # Required to avoid OMP: Error #15
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Tensorflow logging level set to ALL (0, default), WARNING (1), ERROR (2) or NONE (3)
+
 import re
 import logging
 
@@ -12,13 +14,12 @@ from plotly import tools
 import plotly.graph_objs as go
 import plotly.io as pio
 import tensorflow as tf
-tf.logging.set_verbosity(tf.logging.ERROR)
 from tensorflow.keras.models import model_from_json
 
 from src.data.utils import select_rectangle, get_date_taken
 from src.data.segment_droplets import open_grey_scale_image, crop, segment, extract_indiv_droplets
 
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
+#logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
 
 def load_model(path):
     '''Loads model from path and get most recent associated weights'''
@@ -79,8 +80,8 @@ def plot_crystal_data(df, directory):
         x = df["RelTime"],
         y = df["Num drops"],
         name = 'Total',
-        #hoverinfo = 'text',
-        #text = df["Image Name"]
+        hoverinfo = 'text',
+        text = df["Image Name"]
     ), 2, 1)
 
     fig.append_trace(go.Scatter(
@@ -103,7 +104,7 @@ def plot_crystal_data(df, directory):
 
     fig['layout']['xaxis'].update(title='Time (s)')
     fig['layout']['yaxis2'].update(title='Number of drops')
-    fig['layout']['yaxis1'].update(title='Clear/Total', range=[0,1])
+    fig['layout']['yaxis1'].update(title='Clear/Total', range=[0,1.05])
 
     fig['layout'].update(
         title='Crystallization kinetics data for {}'.format(directory)
@@ -132,7 +133,7 @@ def process_image_folder(directory, crop_box = None):
     data = []
     for image_name in tqdm(image_list):
         logging.debug("Processing image: {}".format(image_name))
-        data.append(process_image(os.path.join(directory, image_name), crop_box, model) + image_name) 
+        data.append(process_image(os.path.join(directory, image_name), crop_box, model) + (image_name,)) 
 
     # Make a dataframe from the data and save it to disk
     df = pd.DataFrame(sorted(data, key = lambda x: x[0]), columns=["DateTime", "Num drops", "Num clear", "Num crystal", "Image Name"])
