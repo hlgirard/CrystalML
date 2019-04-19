@@ -32,7 +32,7 @@ def crop(img, cBox):
     (minRow, minCol, maxRow, maxCol) = cBox
     return img[minRow:maxRow, minCol:maxCol]
 
-def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 2, rm_holes_area = 2048, minima_minDist = 100, mask_val = 0.15):
+def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 4, rm_holes_area = 4096, minima_minDist = 100, mask_val = 0.15):
     '''
     Segments droplets in an image using a watershed algorithm.
 
@@ -95,7 +95,7 @@ def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 2, rm_holes_area =
 
     return (labeled, num_maxima, num_regions)
 
-def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.75):
+def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.8):
     '''
     Separate the individual droplets as their own image.
 
