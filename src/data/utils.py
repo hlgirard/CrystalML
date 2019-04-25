@@ -9,7 +9,6 @@ import cv2
 from matplotlib.widgets import RectangleSelector
 from matplotlib import pyplot as plt
 import matplotlib as mpl
-mpl.use('TkAgg')
 
 
 class RectangleSelection(object):
@@ -59,6 +58,8 @@ def select_rectangle(img):
     tuple 
         Rectangle coordinates following the numpy array convention (minRow, minCol, maxRow, maxCol)
     """
+    
+    mpl.use('TkAgg')
 
     print('Select the region of interest then press Q/q to confirm selection and exit.')
 
