@@ -9,17 +9,14 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
-from plotly import offline as py
-from plotly import tools
-import plotly.graph_objs as go
-import plotly.io as pio
+
 import tensorflow as tf
 from tensorflow.keras.models import model_from_json
 
-from src.data.utils import select_rectangle, get_date_taken
-from src.data.segment_droplets import open_grey_scale_image, crop, segment, extract_indiv_droplets
-
-#logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
+from src.data.utils import select_rectangle, get_date_taken, open_grey_scale_image
+from src.data.segment_droplets import crop, segment, extract_indiv_droplets
+from src.visualization.image_processing_overlay import save_overlay_image
+from src.visualization.process_plotting import plot_crystal_data
 
 def load_model(path):
     '''Loads model from path and get most recent associated weights'''
@@ -39,7 +36,26 @@ def load_model(path):
 
     return model
 
-def process_image(image_path, crop_box, model):
+def process_image(image_path, crop_box, model, save_overlay = False):
+    '''
+    Process a single image to obtain the number of droplets with and without crystals
+
+    Parameters
+    ----------
+    imgage_path: string
+        Path to the image to process
+    crop_box: (minRow, maxRow, minCol, maxCol)
+        Cropping box to select the region of interest
+    model: tensorflow model
+        Instance of a tensorflow model trained to discriminate droples containing crystals vs. clear
+    save_overlay: bool, optional
+        Save an image with green / red overlays for drops containing crystals / empty to `image_path / overlay`
+
+    Returns
+    -------
+    (date_take: datetime, num_drops: int, num_clear: int, num_crystal: int)
+        Date from the EXIF data, number of drops, number of clear drops, number of drops containing crystals
+    '''
 
     # Open image
     date_taken = get_date_taken(image_path)
@@ -52,7 +68,7 @@ def process_image(image_path, crop_box, model):
     (labeled, _, _) = segment(cropped)
 
     # Extract individual droplets
-    drop_images = extract_indiv_droplets(cropped, labeled)
+    drop_images, regProps = extract_indiv_droplets(cropped, labeled)
 
     # Predict labels from model
     if drop_images and len(drop_images) > 0:
@@ -69,51 +85,14 @@ def process_image(image_path, crop_box, model):
         num_clear = 0
         num_crystal = 0
 
+    # Save overlay if applicable
+    if save_overlay:
+        path = os.path.join(os.path.dirname(image_path), 'overlay', os.path.basename(image_path))
+        save_overlay_image(path, cropped, regProps, Y)
+
     return (date_taken, num_drops, num_clear, num_crystal)
 
-def plot_crystal_data(df, directory):
-    '''Plot data from crystallization experiment'''
-
-    fig = tools.make_subplots(rows=2, cols=1, shared_xaxes=True, subplot_titles=('Crystallization kinetics', 'Process control'))
-
-    fig.append_trace(go.Scatter(
-        x = df["RelTime"],
-        y = df["Num drops"],
-        name = 'Total',
-        hoverinfo = 'text',
-        text = df["Image Name"]
-    ), 2, 1)
-
-    fig.append_trace(go.Scatter(
-        x = df["RelTime"],
-        y = df["Num clear"],
-        name = 'Clear'
-    ), 2, 1)
-
-    fig.append_trace(go.Scatter(
-        x = df["RelTime"],
-        y = df["Num crystal"],
-        name = 'Crystal'
-    ), 2, 1)
-
-    fig.append_trace(go.Scatter(
-        x = df["RelTime"],
-        y = df["Num clear"] / df["Num drops"],
-        name = 'Clear/Total'
-    ), 1, 1)
-
-    fig['layout']['xaxis'].update(title='Time (s)')
-    fig['layout']['yaxis2'].update(title='Number of drops')
-    fig['layout']['yaxis1'].update(title='Clear/Total', range=[0,1.05])
-
-    fig['layout'].update(
-        title='Crystallization kinetics data for {}'.format(directory)
-    )
-
-    py.plot(fig)
-    pio.write_image(fig, os.path.join(directory, 'Crystallization_kinetics_plot.pdf'))
-
-def process_image_folder(directory, crop_box = None):
+def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay=False):
 
     # List images in directory
     image_list = [file for file in os.listdir(directory) if file.endswith('.JPG')]
@@ -133,7 +112,7 @@ def process_image_folder(directory, crop_box = None):
     data = []
     for image_name in tqdm(image_list):
         logging.debug("Processing image: {}".format(image_name))
-        data.append(process_image(os.path.join(directory, image_name), crop_box, model) + (image_name,)) 
+        data.append(process_image(os.path.join(directory, image_name), crop_box, model, save_overlay = save_overlay) + (image_name,)) 
 
     # Make a dataframe from the data and save it to disk
     df = pd.DataFrame(sorted(data, key = lambda x: x[0]), columns=["DateTime", "Num drops", "Num clear", "Num crystal", "Image Name"])
@@ -141,15 +120,11 @@ def process_image_folder(directory, crop_box = None):
     df.to_csv(os.path.join(directory, "crystalData.csv"))
 
     # Plot the data for imediate visualization
-    plot_crystal_data(df, directory)
+    if show_plot:
+        plot_crystal_data(df, directory)
 
 
 if __name__ == "__main__":
     folder = "notebooks/example_data"
 
-    process_image_folder(folder)
-    
-
-
-
-
+    process_image_folder(folder, save_overlay = True)

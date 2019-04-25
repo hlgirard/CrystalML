@@ -1,9 +1,8 @@
+''' Unittesting for droplet segmentation cases '''
+
 import unittest
 
-from src.data.segment_droplets import segment, crop, extract_indiv_droplets, open_grey_scale_image
-from src.data.utils import get_date_taken
-
-''' Unittesting for droplet segmentation cases '''
+from src.data.utils import get_date_taken, crop, open_grey_scale_image
 
 class TestOpenImage(unittest.TestCase):
 

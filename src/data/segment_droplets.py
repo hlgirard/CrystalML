@@ -1,16 +1,19 @@
+'''
+Methods to segment individual droplets from an array of drops in an emulsion
+'''
+
 from math import sqrt
 import os
 
 import numpy as np
 
-import skimage
-from skimage import io, exposure, img_as_ubyte
+
+from skimage import io, exposure
 from skimage.exposure import equalize_adapthist
-from skimage.color import rgb2gray
 from skimage.feature import peak_local_max
-from skimage.filters import threshold_minimum, threshold_otsu
+from skimage.filters import threshold_otsu
 from skimage.segmentation import watershed
-from skimage.measure import label, regionprops
+from skimage.measure import regionprops
 from skimage.morphology import binary_closing, remove_small_holes, disk
 import cv2
 
@@ -18,19 +21,8 @@ from scipy import ndimage as ndi
 
 from tqdm import tqdm
 
-from src.data.utils import select_rectangle
+from src.data.utils import select_rectangle, open_grey_scale_image, crop
 
-def open_grey_scale_image(path):
-    '''Opens an image and converts it to ubyte and greyscale'''
-    f = cv2.imread(path, 0)
-    if f is None:
-        raise OSError("File does not exist or is not an image: {}".format(path))
-    return f
-
-def crop(img, cBox):
-    '''Returns a cropped image for cBox = (minRow, maxRow, minCol, maxCol)'''
-    (minRow, minCol, maxRow, maxCol) = cBox
-    return img[minRow:maxRow, minCol:maxCol]
 
 def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 4, rm_holes_area = 4096, minima_minDist = 100, mask_val = 0.15):
     '''
@@ -73,6 +65,7 @@ def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 4, rm_holes_area =
 
     # Calculate the distance to the dark background
     distance = ndi.distance_transform_edt(rm_holes_closed)
+    #distance = cv2.distanceTransform(rm_holes_closed.astype('uint8'),cv2.DIST_L2,3) # TODO: test cv2 implementation for speed and acuraccy
 
     # Increase contrast of the the distance image
     cont_stretch = exposure.rescale_intensity(distance, in_range='image')
@@ -114,6 +107,8 @@ def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.8):
     -------
     list(numpy.ndarray)
         list where each array corresponds to one of the labeled regions bounding box + the border region
+    list(RegionProperties)
+        regionProperties of the labeled regions
     '''
 
     # Get region props
@@ -126,15 +121,16 @@ def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.8):
     max_col = img.shape[1]
     max_row = img.shape[0]
 
-    for region in reg:
-        if region.eccentricity < ecc_cutoff:
-            (min_row, min_col, max_row, max_col) = region.bbox
-            drop_image = img[np.max([min_row-border,0]):np.min([max_row+border,max_row]),np.max([min_col-border,0]):np.min([max_col+border,max_col])]
-            resized = cv2.resize(drop_image, (150,150)) * 1./255
-            expanded_dim = np.expand_dims(resized, axis=2)
-            img_list.append(expanded_dim)
+    reg_clean = [region for region in reg if (region.eccentricity < ecc_cutoff)]
 
-    return img_list
+    for region in reg_clean:
+        (min_row, min_col, max_row, max_col) = region.bbox
+        drop_image = img[np.max([min_row-border,0]):np.min([max_row+border,max_row]),np.max([min_col-border,0]):np.min([max_col+border,max_col])]
+        resized = cv2.resize(drop_image, (150,150)) * 1./255
+        expanded_dim = np.expand_dims(resized, axis=2)
+        img_list.append(expanded_dim)
+
+    return img_list, reg_clean
 
 def segment_droplets_to_file(image_filename, crop_box = None):
 

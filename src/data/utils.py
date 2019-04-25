@@ -1,10 +1,16 @@
-from datetime import datetime
+'''
+Utility functions for image manipulation.
+'''
 
-import matplotlib as mpl
-mpl.use('TkAgg')
+from datetime import datetime
+from PIL import Image
+
+import cv2
 from matplotlib.widgets import RectangleSelector
 from matplotlib import pyplot as plt
-from PIL import Image
+import matplotlib as mpl
+mpl.use('TkAgg')
+
 
 class RectangleSelection(object):
     def __init__(self, img):
@@ -65,3 +71,15 @@ def select_rectangle(img):
 def get_date_taken(path):
     '''Return the date image was taken from EXIF data'''
     return datetime.strptime(Image.open(path)._getexif()[36867],  '%Y:%m:%d %H:%M:%S')
+
+def open_grey_scale_image(path):
+    '''Opens an image and converts it to ubyte and greyscale'''
+    image = cv2.imread(path, 0)
+    if image is None:
+        raise OSError("File does not exist or is not an image: {}".format(path))
+    return image
+
+def crop(img, crop_box):
+    '''Returns a cropped image for crop_box = (minRow, maxRow, minCol, maxCol)'''
+    (minRow, minCol, maxRow, maxCol) = crop_box
+    return img[minRow:maxRow, minCol:maxCol]
