@@ -5,12 +5,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Tensorflow logging level set to ALL 
 import re
 import logging
 
-import cv2
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
 
-import tensorflow as tf
 from tensorflow.keras.models import model_from_json
 
 from src.data.utils import select_rectangle, get_date_taken, open_grey_scale_image
@@ -30,8 +28,8 @@ def load_model(path):
     model = model_from_json(loaded_model_json)
 
     ## Load weights into model
-    model_list = sorted([model for model in os.listdir("models") if model.startswith(model_name) and model.endswith('.h5')], key = lambda x : int(re.search(r'\d+',x).group(0)))
-    logging.info("Loading model weights: {}".format(model_list[-1]))
+    model_list = sorted([model for model in os.listdir("models") if model.startswith(model_name) and model.endswith('.h5')], key = lambda x: int(re.search(r'\d+', x).group(0)))
+    logging.info("Loading model weights: %s", model_list[-1])
     model.load_weights("models/" + model_list[-1])
 
     return model
@@ -80,7 +78,7 @@ def process_image(image_path, crop_box, model, save_overlay = False):
         num_crystal = num_drops - num_clear
     
     else:
-        logging.warning("No droplets found in image {}".format(image_path))
+        logging.warning("No droplets found in image %s", image_path)
         num_drops = 0
         num_clear = 0
         num_crystal = 0
@@ -96,7 +94,6 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
 
     # List images in directory
     image_list = [file for file in os.listdir(directory) if file.endswith('.JPG')]
-    logging.debug("Image list: {}".format(image_list))
 
     # Load model
     model = load_model("models/cnn-simple-model.json")
@@ -106,12 +103,10 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
         first_image = open_grey_scale_image(os.path.join(directory, image_list[0]))
         crop_box = select_rectangle(first_image)
 
-    logging.debug("Crop box: {}".format(crop_box))
 
     # Process all images from directory in series
     data = []
     for image_name in tqdm(image_list):
-        logging.debug("Processing image: {}".format(image_name))
         data.append(process_image(os.path.join(directory, image_name), crop_box, model, save_overlay = save_overlay) + (image_name,)) 
 
     # Make a dataframe from the data and save it to disk

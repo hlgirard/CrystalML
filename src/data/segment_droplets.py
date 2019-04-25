@@ -2,7 +2,6 @@
 Methods to segment individual droplets from an array of drops in an emulsion
 '''
 
-from math import sqrt
 import os
 
 import numpy as np
@@ -177,6 +176,3 @@ if __name__ == '__main__':
 
     path = 'notebooks/example_data'
     segment_droplets_to_file(path)
-
-
-
