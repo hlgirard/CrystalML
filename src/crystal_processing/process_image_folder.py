@@ -1,6 +1,4 @@
 import os
-os.environ['KMP_DUPLICATE_LIB_OK']='True' # Required to avoid OMP: Error #15
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Tensorflow logging level set to ALL (0, default), WARNING (1), ERROR (2) or NONE (3)
 
 import math
 import logging

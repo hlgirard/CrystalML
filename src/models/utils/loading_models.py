@@ -1,6 +1,8 @@
 import pkg_resources
 import logging
 import re
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True' # Required to avoid OMP: Error #15
 from tensorflow.keras.models import model_from_json
 logging.getLogger('tensorflow').disabled = True
 

@@ -1,13 +1,11 @@
 import unittest
 
-import cv2
 import os
+import cv2
 import re
 import numpy as np
 
 from src.models.utils.loading_models import load_model
-from src.data.segment_droplets import segment
-from src.data.utils import open_grey_scale_image
 
 class TestLabelDroplets(unittest.TestCase):
 
@@ -30,7 +28,7 @@ class TestLabelDroplets(unittest.TestCase):
 
         # Excpected results
         self.num_crystals = 20
-        self.permitted_delta = 5
+        self.permitted_delta = 10
 
     def test_crystal_clear_predictions(self):
         Y = self.model.predict_classes(self.test_images_array).flatten().tolist()
