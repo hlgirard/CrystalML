@@ -3,42 +3,17 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True' # Required to avoid OMP: Error #15
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Tensorflow logging level set to ALL (0, default), WARNING (1), ERROR (2) or NONE (3)
 
 import math
-import re
 import logging
 from joblib import Parallel, delayed
-import pkg_resources
-import logging
 
 import numpy as np
 import pandas as pd
-
-from tensorflow.keras.models import model_from_json
-logging.getLogger('tensorflow').disabled = True
 
 from src.data.utils import select_rectangle, get_date_taken, open_grey_scale_image
 from src.data.segment_droplets import crop, segment, extract_indiv_droplets
 from src.visualization.image_processing_overlay import save_overlay_image
 from src.visualization.process_plotting import plot_crystal_data
-
-def load_model(model_name):
-    '''Loads model from path and get most recent associated weights'''
-    # TODO: Move this methods to the models utils package
-
-    model_basename = model_name.split('.')[0]
-    model_path = pkg_resources.resource_filename('models', model_name)
-
-    ## Load model from JSON
-    with open(model_path, 'r') as json_file:
-        loaded_model_json = json_file.read()
-
-    model = model_from_json(loaded_model_json)
-
-    ## Load weights into model
-    model_list = sorted([model for model in pkg_resources.resource_listdir('models', '.') if model.startswith(model_basename) and model.endswith('.h5')], key = lambda x: int(re.search(r'\d+', x).group(0)))
-    logging.info("Loading model weights: %s", model_list[-1])
-    model.load_weights(pkg_resources.resource_filename('models', model_list[-1]))
-
-    return model
+from src.models.utils.loading_models import load_model
 
 def process_image(image_path, crop_box, model, save_overlay = False):
     '''
