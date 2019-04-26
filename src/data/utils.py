@@ -55,11 +55,9 @@ def select_rectangle(img):
 
     Returns
     -------
-    tuple 
+    tuple
         Rectangle coordinates following the numpy array convention (minRow, minCol, maxRow, maxCol)
     """
-    
-    mpl.use('TkAgg')
 
     print('Select the region of interest then press Q/q to confirm selection and exit.')
 
