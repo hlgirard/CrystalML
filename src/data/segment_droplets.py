@@ -18,8 +18,6 @@ import cv2
 
 from scipy import ndimage as ndi
 
-from tqdm import tqdm
-
 from src.data.utils import select_rectangle, open_grey_scale_image, crop
 
 
@@ -143,7 +141,7 @@ def segment_droplets_to_file(image_filename, crop_box = None):
     if not crop_box:
         crop_box = select_rectangle(open_grey_scale_image(img_list[0]))
 
-    for image_file in tqdm(img_list):
+    for image_file in img_list:
         print("Processing {}".format(image_file))
         # Open image
         image = open_grey_scale_image(image_file)
