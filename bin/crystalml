@@ -1,0 +1,13 @@
+#!/usr/bin/env pythonw
+import os
+import argparse
+
+from src.crystal_processing.process_image_folder import process_image_folder
+
+# Setup parser
+ap = argparse.ArgumentParser()
+ap.add_argument("directory", default=os.getcwd(), help="Path of the directory")
+
+args = ap.parse_args()
+
+process_image_folder(args.directory)

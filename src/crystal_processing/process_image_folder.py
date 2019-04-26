@@ -6,33 +6,37 @@ import math
 import re
 import logging
 from joblib import Parallel, delayed
+import pkg_resources
+import logging
 
 import numpy as np
 import pandas as pd
 
 from tensorflow.keras.models import model_from_json
+logging.getLogger('tensorflow').disabled = True
 
 from src.data.utils import select_rectangle, get_date_taken, open_grey_scale_image
 from src.data.segment_droplets import crop, segment, extract_indiv_droplets
 from src.visualization.image_processing_overlay import save_overlay_image
 from src.visualization.process_plotting import plot_crystal_data
 
-def load_model(path):
+def load_model(model_name):
     '''Loads model from path and get most recent associated weights'''
     # TODO: Move this methods to the models utils package
 
-    model_name = path.split('/')[-1].split('.')[0]
+    model_basename = model_name.split('.')[0]
+    model_path = pkg_resources.resource_filename('models', model_name)
 
     ## Load model from JSON
-    with open(path, 'r') as json_file:
+    with open(model_path, 'r') as json_file:
         loaded_model_json = json_file.read()
 
     model = model_from_json(loaded_model_json)
 
     ## Load weights into model
-    model_list = sorted([model for model in os.listdir("models") if model.startswith(model_name) and model.endswith('.h5')], key = lambda x: int(re.search(r'\d+', x).group(0)))
+    model_list = sorted([model for model in pkg_resources.resource_listdir('models', '.') if model.startswith(model_basename) and model.endswith('.h5')], key = lambda x: int(re.search(r'\d+', x).group(0)))
     logging.info("Loading model weights: %s", model_list[-1])
-    model.load_weights("models/" + model_list[-1])
+    model.load_weights(pkg_resources.resource_filename('models', model_list[-1]))
 
     return model
 
@@ -92,7 +96,7 @@ def process_image(image_path, crop_box, model, save_overlay = False):
 
     return (date_taken, num_drops, num_clear, num_crystal)
 
-def process_image_batch(image_list, crop_box, model_path, save_overlay = False):
+def process_image_batch(image_list, crop_box, model_name, save_overlay = False):
     '''Process a batch of images and return a list of results
 
     Parameters
@@ -101,7 +105,7 @@ def process_image_batch(image_list, crop_box, model_path, save_overlay = False):
         List of paths to the image to process
     crop_box: (minRow, maxRow, minCol, maxCol)
         Cropping box to select the region of interest
-    model_path: string
+    model_name: string
         Path to the tensorflow model to load
     save_overlay: bool, optional
         Save an image with green / red overlays for drops containing crystals / empty to `image_path / overlay`
@@ -114,7 +118,7 @@ def process_image_batch(image_list, crop_box, model_path, save_overlay = False):
     '''
 
     # Instantiate the model
-    model = load_model(model_path)
+    model = load_model(model_name)
 
     # Process the data
     data = []
@@ -138,7 +142,7 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     print(f"Number of batches: {num_batches}")
 
     # Define the model path
-    model_path = "models/cnn-simple-model.json"
+    model_name = "cnn-simple-model.json"
     
     # Obtain crop box from user if not passed as argument
     if not crop_box:
@@ -148,10 +152,10 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     # Process all images from directory in parallel
     if num_batches == 0:
         # Process serialy
-        data = [process_image_batch(image_list[i*batch_size:min([(i+1)*batch_size, num_images])], crop_box, model_path, save_overlay)
+        data = [process_image_batch(image_list[i*batch_size:min([(i+1)*batch_size, num_images])], crop_box, model_name, save_overlay)
                 for i in range(num_batches)]
     else:
-        data = Parallel(n_jobs=-2, verbose=10)(delayed(process_image_batch)(image_list[i*batch_size:min([(i+1)*batch_size, num_images])], crop_box, model_path, save_overlay)
+        data = Parallel(n_jobs=-2, verbose=10)(delayed(process_image_batch)(image_list[i*batch_size:min([(i+1)*batch_size, num_images])], crop_box, model_name, save_overlay)
                                    for i in range(num_batches))
 
     flat_data = [item for sublist in data for item in sublist]
@@ -164,7 +168,6 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     # Plot the data for imediate visualization
     if show_plot:
         plot_crystal_data(df, directory)
-
 
 if __name__ == "__main__":
     folder = "notebooks/example_data"
