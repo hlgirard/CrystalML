@@ -25,7 +25,8 @@ setup(name='crystalml',
           'setuptools',
           'scipy',
           'seaborn',
-          'tensorboard'
+          'tensorboard',
+          'tqdm'
 
       ],
       scripts=[

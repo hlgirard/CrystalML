@@ -15,13 +15,14 @@ from skimage.segmentation import watershed
 from skimage.measure import regionprops
 from skimage.morphology import binary_closing, remove_small_holes, disk
 import cv2
+from tqdm import tqdm
 
 from scipy import ndimage as ndi
 
 from src.data.utils import select_rectangle, open_grey_scale_image, crop
 
 
-def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 4, rm_holes_area = 4096, minima_minDist = 100, mask_val = 0.15):
+def segment(img, exp_clip_limit=0.06, closing_disk_radius=4, rm_holes_area=8192, minima_minDist=100, mask_val=0.1):
     '''
     Segments droplets in an image using a watershed algorithm.
 
@@ -58,7 +59,7 @@ def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 4, rm_holes_area =
 
     # Remove dark spots and connect bright spots
     closed = binary_closing(binary, selem=disk(closing_disk_radius))
-    rm_holes_closed = remove_small_holes(closed, area_threshold=rm_holes_area, connectivity=1)
+    rm_holes_closed = remove_small_holes(closed, area_threshold=rm_holes_area, connectivity=2)
 
     # Calculate the distance to the dark background
     distance = ndi.distance_transform_edt(rm_holes_closed)
@@ -72,7 +73,7 @@ def segment(img, exp_clip_limit = 0.06, closing_disk_radius = 4, rm_holes_area =
     masked[masked < mask_val] = 0
 
     # Find local maximas of the distance image
-    local_maxi = peak_local_max(masked, indices=False, min_distance=minima_minDist, threshold_abs=0.6)
+    local_maxi = peak_local_max(masked, indices=False, min_distance=minima_minDist)
 
     # Markers for watershed are the local maxima of the distance image
     markers, num_maxima = ndi.label(local_maxi)
@@ -141,8 +142,7 @@ def segment_droplets_to_file(image_filename, crop_box = None):
     if not crop_box:
         crop_box = select_rectangle(open_grey_scale_image(img_list[0]))
 
-    for image_file in img_list:
-        print("Processing {}".format(image_file))
+    for image_file in tqdm(img_list):
         # Open image
         image = open_grey_scale_image(image_file)
 
@@ -152,23 +152,24 @@ def segment_droplets_to_file(image_filename, crop_box = None):
 
         # Crop image
         cropped = crop(image, crop_box)
-        print('Cropped image shape: {}'.format(cropped.shape))
 
         # Segment image
         (labeled, num_maxima, num_regions) = segment(cropped)
-        print("Segmentation yielded {} maximas and {} regions".format(num_maxima, num_regions))
 
         # Extract individual droplets
-        drop_images = extract_indiv_droplets(cropped, labeled)
+        drop_images, _ = extract_indiv_droplets(cropped, labeled)
 
         # Output folder has the same name as the image by default
         out_directory = image_file.split('.')[0] + '/'
 
+        if not os.path.exists(out_directory):
+            os.mkdir(out_directory)
+
         # Save all the images in the output directory
-        print('Writing images to {}'.format(out_directory))
         for (i, img) in enumerate(drop_images):
             name = out_directory + image_file.split('.')[0].split('/')[-1] + '_drop_' + str(i) + '.jpg'
-            io.imsave(name, img)
+            print(type(img))
+            io.imsave(name, img, check_contrast=False)
     
 if __name__ == '__main__':
 
