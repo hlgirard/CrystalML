@@ -12,7 +12,7 @@ setup(name='crystalml',
       author='Henri-Louis Girard',
       author_email='hl.girard@gmail.com',
       license='GPLv3',
-      packages=find_packages(exclude=['tests']),
+      packages=find_packages("src", exclude=["tests.*", "tests"]),
       install_requires=[
           'tensorflow',
           'matplotlib',
