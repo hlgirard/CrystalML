@@ -3,8 +3,9 @@ import logging
 import re
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True' # Required to avoid OMP: Error #15
-from tensorflow.keras.models import model_from_json
-logging.getLogger('tensorflow').disabled = True
+import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR)
+
 
 def load_model(model_name):
     '''Loads model from path and get most recent associated weights'''
@@ -16,7 +17,7 @@ def load_model(model_name):
     with open(model_path, 'r') as json_file:
         loaded_model_json = json_file.read()
 
-    model = model_from_json(loaded_model_json)
+    model = tf.keras.models.model_from_json(loaded_model_json)
 
     ## Load weights into model
     model_list = sorted([model for model in pkg_resources.resource_listdir('models', '.') if model.startswith(model_basename) and model.endswith('.h5')], key = lambda x: int(re.search(r'\d+', x).group(0)))

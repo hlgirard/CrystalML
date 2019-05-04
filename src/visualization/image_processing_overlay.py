@@ -4,6 +4,7 @@ Utility functions to save overlay information on images.
 
 import os
 import numpy as np
+import warnings
 
 from skimage import io, img_as_ubyte
 from skimage.color import label2rgb
@@ -34,5 +35,7 @@ def save_overlay_image(path, image, reg_props, reg_labels):
     if not os.path.exists(os.path.dirname(path)):
         os.mkdir(os.path.dirname(path))
 
-    io.imsave(path, img_as_ubyte(overlay_label))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        io.imsave(path, img_as_ubyte(overlay_label))
     
