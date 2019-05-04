@@ -13,7 +13,7 @@ from src.visualization.image_processing_overlay import save_overlay_image
 from src.visualization.process_plotting import plot_crystal_data
 from src.models.utils.loading_models import load_model
 
-def process_image(image_path, crop_box, model, save_overlay = False):
+def process_image(image_path, crop_box, model, save_overlay=False):
     '''
     Process a single image to obtain the number of droplets with and without crystals
 
@@ -69,7 +69,7 @@ def process_image(image_path, crop_box, model, save_overlay = False):
 
     return (date_taken, num_drops, num_clear, num_crystal)
 
-def process_image_batch(image_list, crop_box, model_name, save_overlay = False):
+def process_image_batch(image_list, crop_box, model_name, save_overlay=False):
     '''Process a batch of images and return a list of results
 
     Parameters
