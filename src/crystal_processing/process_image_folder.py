@@ -108,17 +108,18 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
 
     # Compute the number of batches necessary
     num_images = len(image_list)
-    print(f"Number of images: {num_images}")
+    logging.info("Number of images: %d", num_images)
     batch_size = max([1, num_images // (os.cpu_count()-1)])
-    print(f"Batch size: {batch_size}")
+    logging.info("Batch size: %d", batch_size)
     num_batches = int(math.ceil(num_images // batch_size))
-    print(f"Number of batches: {num_batches}")
+    logging.info("Number of batches: %d", num_batches)
 
     # Define the model path
     model_name = "cnn-simple-model.json"
     
     # Obtain crop box from user if not passed as argument
     if not crop_box:
+        logging.info("Crop box not passed, opening ROI selection tool")
         first_image = open_grey_scale_image(image_list[0])
         crop_box = select_rectangle(first_image)
 
@@ -137,6 +138,7 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     df = pd.DataFrame(sorted(flat_data, key = lambda x: x[0]), columns=["DateTime", "Num drops", "Num clear", "Num crystal", "Image Name"])
     df['RelTime'] = (df['DateTime'] - df['DateTime'][0]).dt.total_seconds()
     df.to_csv(os.path.join(directory, "crystalData.csv"))
+    logging.info("Saved data to disk.")
 
     # Plot the data for imediate visualization
     if show_plot:

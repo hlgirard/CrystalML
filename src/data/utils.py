@@ -9,6 +9,7 @@ import cv2
 from matplotlib.widgets import RectangleSelector
 from matplotlib import pyplot as plt
 import matplotlib as mpl
+import logging
 
 
 class RectangleSelection(object):
@@ -19,6 +20,7 @@ class RectangleSelection(object):
 
         #Setup the figure
         self.fig, self.ax = plt.subplots()
+        self.fm = plt.get_current_fig_manager()
         plt.ion
         plt.imshow(self.img, cmap='gray')
 
@@ -42,7 +44,13 @@ class RectangleSelection(object):
     def toggle_selector(self, event):
         if event.key in ['Q', 'q'] and self.RS.active:
             self.RS.set_active(False)
-            plt.close('all')
+            self.done = True
+
+    def close(self):
+        logging.debug("Closing selection window")
+        plt.show(block=False)
+        plt.close('all')
+        self.fm.destroy()
 
 def select_rectangle(img):
     """
@@ -62,10 +70,14 @@ def select_rectangle(img):
     print('Select the region of interest then press Q/q to confirm selection and exit.')
 
     selector = RectangleSelection(img)
+    while not selector.done:
+        pass
+    crop_box = selector.rectangle
+    logging.debug("Got crop_box %s", str(crop_box))
+    selector.close()
+    plt.pause(0.5)
 
-    plt.close('all')
-
-    return selector.rectangle
+    return crop_box
 
 def get_date_taken(path):
     '''Return the date image was taken from EXIF data'''
