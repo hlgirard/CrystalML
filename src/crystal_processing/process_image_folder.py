@@ -106,17 +106,9 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     # List images in directory
     image_list = [os.path.join(directory, image_path) for image_path in os.listdir(directory) if image_path.endswith('.JPG')]
 
-    # Compute the number of batches necessary
-    num_images = len(image_list)
-    logging.info("Number of images: %d", num_images)
-    batch_size = max([1, num_images // (os.cpu_count()-1)])
-    logging.info("Batch size: %d", batch_size)
-    num_batches = int(math.ceil(num_images // batch_size))
-    logging.info("Number of batches: %d", num_batches)
-
     # Define the model path
     model_name = "cnn-simple-model.json"
-    
+
     # Obtain crop box from user if not passed as argument
     while not crop_box:
         logging.info("Crop box not passed, opening ROI selection tool")
@@ -153,8 +145,14 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
 
         plt.close()
         plt.pause(0.1)
-        
 
+    # Compute the number of batches necessary
+    num_images = len(image_list)
+    logging.info("Number of images: %d", num_images)
+    batch_size = max([1, num_images // (os.cpu_count()-1)])
+    logging.info("Batch size: %d", batch_size)
+    num_batches = int(math.ceil(num_images // batch_size))
+    logging.info("Number of batches: %d", num_batches)
 
     # Process all images from directory in parallel
     if num_batches == 0:

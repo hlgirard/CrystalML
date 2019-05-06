@@ -8,6 +8,7 @@ import numpy as np
 
 
 from skimage import io, exposure
+from skimage.color import label2rgb
 from skimage.exposure import equalize_adapthist
 from skimage.feature import peak_local_max
 from skimage.filters import threshold_otsu
@@ -130,7 +131,7 @@ def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.8):
 
     return img_list, reg_clean
 
-def segment_droplets_to_file(image_filename, crop_box = None):
+def segment_droplets_to_file(image_filename, crop_box=None, save_overlay=False):
 
     if os.path.isdir(image_filename):
         img_list = [os.path.join(image_filename,f) for f in os.listdir(image_filename) if f.endswith('.JPG')]
@@ -156,6 +157,12 @@ def segment_droplets_to_file(image_filename, crop_box = None):
         # Segment image
         (labeled, num_maxima, num_regions) = segment(cropped)
 
+        # Save the overlay image if requested
+        if save_overlay:
+            image_overlay = label2rgb(labeled, image=cropped, bg_label=0)
+            filename = image_file.split('.')[0] + '_segmented.jpg'
+            io.imsave(filename, image_overlay)
+
         # Extract individual droplets
         drop_images, _ = extract_indiv_droplets(cropped, labeled)
 
@@ -168,5 +175,4 @@ def segment_droplets_to_file(image_filename, crop_box = None):
         # Save all the images in the output directory
         for (i, img) in enumerate(drop_images):
             name = out_directory + image_file.split('.')[0].split('/')[-1] + '_drop_' + str(i) + '.jpg'
-            print(type(img))
             io.imsave(name, img, check_contrast=False)

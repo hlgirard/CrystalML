@@ -48,7 +48,7 @@ def segment(directory, save_overlay, verbose):
         logging.basicConfig(level=logging.WARNING, format='%(levelname)s - %(message)s')
 
     logging.info("Extracting droplets from: %s", directory)
-    segment_droplets_to_file(directory)
+    segment_droplets_to_file(directory, save_overlay=save_overlay)
 
 @cli.command()
 @click.argument('directory', type=click.Path(exists=True, file_okay=False))

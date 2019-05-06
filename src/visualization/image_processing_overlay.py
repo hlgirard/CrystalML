@@ -44,29 +44,3 @@ def save_overlay_image(path, image, reg_props, reg_labels):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         io.imsave(path, img_as_ubyte(overlay_label))
-
-def generate_segmentation_overlay(path, image, labeled):
-    '''
-    Generates and saves an image with colored overlay corresponding to segmented regions
-
-    Parameters
-    ----------
-    path: string
-        Path to the save directory
-    image: np.array
-        Original image to use as background for the overlay
-    labeled: np.array
-        Label array of same shape as image with 0 as background label and integers denoting segmented regions.
-    '''
-
-    if image.shape != labeled.shape:
-        raise ValueError("Image and labeled array have different sizes.")
-
-    image_label_overlay = label2rgb(labeled, image=image, bg_label=0)
-
-    if not os.path.exists(os.path.dirname(path)):
-        os.mkdir(os.path.dirname(path))
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        io.imsave(path, img_as_ubyte(image_label_overlay))
