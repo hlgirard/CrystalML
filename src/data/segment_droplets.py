@@ -170,8 +170,3 @@ def segment_droplets_to_file(image_filename, crop_box = None):
             name = out_directory + image_file.split('.')[0].split('/')[-1] + '_drop_' + str(i) + '.jpg'
             print(type(img))
             io.imsave(name, img, check_contrast=False)
-    
-if __name__ == '__main__':
-
-    path = 'notebooks/example_data'
-    segment_droplets_to_file(path)

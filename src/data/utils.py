@@ -31,7 +31,7 @@ class RectangleSelection(object):
                                        spancoords='pixels',
                                        interactive=True)
 
-        plt.connect('key_press_event', self.toggle_selector)
+        #plt.connect('key_press_event', self.toggle_selector)
         plt.show()
 
     def onselect(self, e_click, e_release):
@@ -41,10 +41,10 @@ class RectangleSelection(object):
         maxCol = int(max(e_click.xdata, e_release.xdata))
         self.rectangle = (minRow, minCol, maxRow, maxCol)
 
-    def toggle_selector(self, event):
-        if event.key in ['Q', 'q'] and self.RS.active:
-            self.RS.set_active(False)
-            self.done = True
+    #def toggle_selector(self, event):
+    #    if event.key in ['Q', 'q'] and self.RS.active:
+    #        self.RS.set_active(False)
+    #        self.done = True
 
     def close(self):
         logging.debug("Closing selection window")
@@ -70,11 +70,12 @@ def select_rectangle(img):
     print('Select the region of interest then press Q/q to confirm selection and exit.')
 
     selector = RectangleSelection(img)
-    while not selector.done:
-        pass
+    #while not selector.done:
+    #    pass
     crop_box = selector.rectangle
+    plt.close('all')
     logging.debug("Got crop_box %s", str(crop_box))
-    selector.close()
+    #selector.close()
     plt.pause(0.5)
 
     return crop_box
