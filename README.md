@@ -1,5 +1,6 @@
 # CrystalML
 
+[![PyPI version](https://badge.fury.io/py/crystalml.svg)](https://badge.fury.io/py/crystalml)
 ![Travis CI status](https://travis-ci.com/hlgirard/CrystalML.svg?branch=master)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/hlgirard/CrystalML/blob/master/LICENSE)
 
