@@ -101,7 +101,7 @@ def process_image_batch(image_list, crop_box, model_name, save_overlay=False):
 
     return data
 
-def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay=False):
+def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay=False, show_segmentation=False):
 
     # List images in directory
     image_list = [os.path.join(directory, image_path) for image_path in os.listdir(directory) if image_path.endswith('.JPG')]
@@ -118,10 +118,43 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     model_name = "cnn-simple-model.json"
     
     # Obtain crop box from user if not passed as argument
-    if not crop_box:
+    while not crop_box:
         logging.info("Crop box not passed, opening ROI selection tool")
         first_image = open_grey_scale_image(image_list[0])
         crop_box = select_rectangle(first_image)
+
+    # If show segmentation flag is asserted, display the segmentation of an image
+    if show_segmentation:
+        idx_80 = int(len(image_list) * 0.8)
+        image_80 = crop(open_grey_scale_image(image_list[idx_80]), crop_box)
+        logging.info("Segmentation check requested. Segmenting image %s", image_list[idx_80])
+        labeled, _, _ = segment(image_80)
+
+        from skimage.color import label2rgb
+        overlay_image = label2rgb(labeled, image=image_80, bg_label=0)
+
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        fig.set_tight_layout(True)
+        plt.ion()
+        plt.imshow(overlay_image)
+        plt.show(block=False)
+        plt.pause(0.1)
+
+        result = input("Continue? (y/n)\n")
+
+        while result != 'y':
+            if result == 'n':
+                plt.close()
+                logging.warning("Segmentation rejected. Stopping the application")
+                return
+            else:
+                result = input("Please press 'y' for yes or 'n' for no\n")
+
+        plt.close()
+        plt.pause(0.1)
+        
+
 
     # Process all images from directory in parallel
     if num_batches == 0:

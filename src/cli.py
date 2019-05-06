@@ -27,7 +27,7 @@ def process(directory, check_segmentation, save_overlay, save_plot, verbose):
 
     logging.info("Processing directory: %s", directory)
 
-    process_image_folder(directory, show_plot=save_plot, save_overlay=save_overlay)
+    process_image_folder(directory, show_plot=save_plot, save_overlay=save_overlay, show_segmentation=check_segmentation)
 
 
 @cli.command()
