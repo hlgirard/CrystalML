@@ -77,5 +77,3 @@ def train(directory, model, verbose, tensorboard):
 
     elif model == "cnn-transfer":
         raise NotImplementedError("Training CNN-transfer from the command line is not implemented yet.")
-
-    
