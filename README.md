@@ -1,7 +1,7 @@
 # CrystalML
 
 [![PyPI version](https://badge.fury.io/py/crystalml.svg)](https://badge.fury.io/py/crystalml)
-![Travis CI status](https://travis-ci.com/hlgirard/CrystalML.svg?branch=master)
+[![Travis CI status](https://travis-ci.com/hlgirard/CrystalML.svg?branch=master)](https://travis-ci.com/hlgirard/CrystalML/branches)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/hlgirard/CrystalML/blob/master/LICENSE)
 
 **Disclaimer:** This program is undergoing active development and should _not_ be used for production. All APIs and commands are susceptible to change without notice.

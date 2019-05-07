@@ -125,6 +125,8 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
         from skimage.color import label2rgb
         overlay_image = label2rgb(labeled, image=image_80, bg_label=0)
 
+        import matplotlib
+        matplotlib.use('Qt4Agg', force=True)
         import matplotlib.pyplot as plt
         fig = plt.figure()
         fig.set_tight_layout(True)
