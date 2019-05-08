@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 
 import numpy as np
 import pandas as pd
-import tqdm
+from tqdm import tqdm
 
 from src.data.utils import select_rectangle, get_date_taken, open_grey_scale_image
 from src.data.segment_droplets import crop, segment, extract_indiv_droplets
@@ -98,7 +98,7 @@ def process_image_batch(image_list, crop_box, model_name, batch_number=0, save_o
 
     # Process the data
     data = []
-    for image_path in tqdm.tqdm(image_list, desc="Batch {}".format(batch_number), position=batch_number):
+    for image_path in tqdm(image_list, desc="Thread #{}".format(batch_number), position=batch_number, leave=batch_number==0):
         image_name = os.path.basename(image_path)
         data.append(process_image(image_path, crop_box, model, save_overlay=save_overlay) + (image_name,))
 

@@ -5,7 +5,8 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True' # Required to avoid OMP: Error #15
 import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
-
+from keras import backend as K
+K.set_session(K.tf.Session(config=K.tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)))
 
 def load_model(model_name):
     '''Loads model from path and get most recent associated weights'''
