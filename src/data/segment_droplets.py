@@ -16,7 +16,7 @@ from skimage.segmentation import watershed
 from skimage.measure import regionprops
 from skimage.morphology import binary_closing, remove_small_holes, disk
 import cv2
-from tqdm import tqdm
+import click
 
 from scipy import ndimage as ndi
 
@@ -143,36 +143,37 @@ def segment_droplets_to_file(image_filename, crop_box=None, save_overlay=False):
     if not crop_box:
         crop_box = select_rectangle(open_grey_scale_image(img_list[0]))
 
-    for image_file in tqdm(img_list):
-        # Open image
-        image = open_grey_scale_image(image_file)
+    with click.progressbar(img_list, label="Segmenting the images...") as progress_bar:
+        for image_file in progress_bar:
+            # Open image
+            image = open_grey_scale_image(image_file)
 
-        # Obtain crop box from user if not passed as argument
-        if not crop_box:
-            crop_box = select_rectangle(image)
+            # Obtain crop box from user if not passed as argument
+            if not crop_box:
+                crop_box = select_rectangle(image)
 
-        # Crop image
-        cropped = crop(image, crop_box)
+            # Crop image
+            cropped = crop(image, crop_box)
 
-        # Segment image
-        (labeled, num_maxima, num_regions) = segment(cropped)
+            # Segment image
+            (labeled, num_maxima, num_regions) = segment(cropped)
 
-        # Save the overlay image if requested
-        if save_overlay:
-            image_overlay = label2rgb(labeled, image=cropped, bg_label=0)
-            filename = image_file.split('.')[0] + '_segmented.jpg'
-            io.imsave(filename, image_overlay)
+            # Save the overlay image if requested
+            if save_overlay:
+                image_overlay = label2rgb(labeled, image=cropped, bg_label=0)
+                filename = image_file.split('.')[0] + '_segmented.jpg'
+                io.imsave(filename, image_overlay)
 
-        # Extract individual droplets
-        drop_images, _ = extract_indiv_droplets(cropped, labeled)
+            # Extract individual droplets
+            drop_images, _ = extract_indiv_droplets(cropped, labeled)
 
-        # Output folder has the same name as the image by default
-        out_directory = image_file.split('.')[0] + '/'
+            # Output folder has the same name as the image by default
+            out_directory = image_file.split('.')[0] + '/'
 
-        if not os.path.exists(out_directory):
-            os.mkdir(out_directory)
+            if not os.path.exists(out_directory):
+                os.mkdir(out_directory)
 
-        # Save all the images in the output directory
-        for (i, img) in enumerate(drop_images):
-            name = out_directory + image_file.split('.')[0].split('/')[-1] + '_drop_' + str(i) + '.jpg'
-            io.imsave(name, img, check_contrast=False)
+            # Save all the images in the output directory
+            for (i, img) in enumerate(drop_images):
+                name = out_directory + image_file.split('.')[0].split('/')[-1] + '_drop_' + str(i) + '.jpg'
+                io.imsave(name, img, check_contrast=False)

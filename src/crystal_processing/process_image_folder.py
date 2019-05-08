@@ -176,8 +176,3 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     # Plot the data for imediate visualization
     if show_plot:
         plot_crystal_data(df, directory)
-
-if __name__ == "__main__":
-    folder = "notebooks/example_data"
-
-    process_image_folder(folder, save_overlay=False, show_plot=False)

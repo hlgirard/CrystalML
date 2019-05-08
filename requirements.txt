@@ -1,4 +1,5 @@
 bleach>=2.1.0
+click
 docutils>=0.13.1
 Keras==2.2.4
 matplotlib==3.0.3
@@ -12,7 +13,6 @@ plotly==3.6.1
 setuptools
 scikit-image==0.15.0
 scipy==1.1.0
-tqdm
 seaborn==0.9.0
 tensorboard==1.13.1
 tensorflow==1.13.1
