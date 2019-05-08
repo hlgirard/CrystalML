@@ -32,6 +32,7 @@ setup(name='crystalml',
           'scipy',
           'seaborn',
           'tensorboard',
+          'tqdm',
       ],
       entry_points={
           'console_scripts': [
