@@ -143,7 +143,7 @@ def segment_droplets_to_file(image_filename, crop_box=None, save_overlay=False):
     if not crop_box:
         crop_box = select_rectangle(open_grey_scale_image(img_list[0]))
 
-    for image_file in tqdm(progress_bar):
+    for image_file in tqdm(img_list):
         # Open image
         image = open_grey_scale_image(image_file)
 
