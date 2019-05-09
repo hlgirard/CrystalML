@@ -70,7 +70,7 @@ def process_image(image_path, crop_box, model, save_overlay=False):
 
     return (date_taken, num_drops, num_clear, num_crystal)
 
-def process_image_batch(image_list, crop_box, model_name, batch_number=0, save_overlay=False):
+def process_image_batch(image_list, crop_box, model_name, batch_number=0, verbosity=logging.WARNING, save_overlay=False):
     '''Process a batch of images and return a list of results
 
     Parameters
@@ -82,9 +82,11 @@ def process_image_batch(image_list, crop_box, model_name, batch_number=0, save_o
     model_name: string
         Path to the tensorflow model to load
     batch_numer: int
-        Batch number when parallel processing for progress bar display
+        Batch number when parallel processing for progress bar display. Default: 0
+    verbosity: int
+        verbosity as a logging level. Default: logging.WARNING (30)
     save_overlay: bool, optional
-        Save an image with green / red overlays for drops containing crystals / empty to `image_path / overlay`
+        Save an image with green / red overlays for drops containing crystals / empty to `image_path / overlay`. Default: False
 
     Returns
     -------
@@ -98,7 +100,12 @@ def process_image_batch(image_list, crop_box, model_name, batch_number=0, save_o
 
     # Process the data
     data = []
-    for image_path in tqdm(image_list, desc="Thread #{}".format(batch_number), position=batch_number, leave=batch_number==0):
+    for image_path in tqdm(image_list,
+                           desc="Thread #{}".format(batch_number),
+                           position=batch_number,
+                           leave=(batch_number == 0),
+                           disable=((batch_number != 0) and (verbosity > 20))
+                           ):
         image_name = os.path.basename(image_path)
         data.append(process_image(image_path, crop_box, model, save_overlay=save_overlay) + (image_name,))
 
@@ -159,8 +166,15 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     num_batches = int(math.ceil(num_images // batch_size))
     logging.info("Number of batches: %d", num_batches)
 
+    logging.info("Logging level set at %d", logging.root.level)
+
     # Process all images from directory in parallel
-    data = Parallel(n_jobs=-2)(delayed(process_image_batch)(image_list[i*batch_size:min([(i+1)*batch_size, num_images])], crop_box, model_name, i, save_overlay)
+    data = Parallel(n_jobs=-2)(delayed(process_image_batch)(image_list[i*batch_size:min([(i+1)*batch_size, num_images])],
+                                                                       crop_box,
+                                                                       model_name,
+                                                                       i,
+                                                                       logging.root.level,
+                                                                       save_overlay)
                         for i in range(num_batches))
 
     flat_data = [item for sublist in data for item in sublist]
