@@ -81,7 +81,7 @@ def select_rectangle(img):
 
 def get_date_taken(path):
     '''Return the date image was taken from EXIF data'''
-    return datetime.strptime(Image.open(path)._getexif()[36867],  '%Y:%m:%d %H:%M:%S')
+    return datetime.strptime(Image.open(path)._getexif()[36867], '%Y:%m:%d %H:%M:%S')
 
 def open_grey_scale_image(path):
     '''Opens an image and converts it to ubyte and greyscale'''

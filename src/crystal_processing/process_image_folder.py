@@ -166,8 +166,6 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     num_batches = int(math.ceil(num_images // batch_size))
     logging.info("Number of batches: %d", num_batches)
 
-    logging.info("Logging level set at %d", logging.root.level)
-
     # Process all images from directory in parallel
     data = Parallel(n_jobs=-2)(delayed(process_image_batch)(image_list[i*batch_size:min([(i+1)*batch_size, num_images])],
                                                                        crop_box,
@@ -175,7 +173,7 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
                                                                        i,
                                                                        logging.root.level,
                                                                        save_overlay)
-                        for i in range(num_batches))
+                                for i in range(num_batches))
 
     flat_data = [item for sublist in data for item in sublist]
 
