@@ -32,12 +32,14 @@ def process(directory, check_segmentation, save_overlay, save_plot, verbose):
 
 @cli.command()
 @click.argument('directory', type=click.Path(exists=True))
+@click.option('-c', '--compare', is_flag=True, help="Compare scikit-image and openCV segmentation implementation")
 @click.option('-o', '--save-overlay', is_flag=True, help="Save segmented overlay to disk")
 @click.option('-v', '--verbose', count=True, help="Increase verbosity level")
-def segment(directory, save_overlay, verbose):
+def segment(directory, compare, save_overlay, verbose):
     '''Segment an image or directory of images and saves extracted droplets to disk'''
 
     from .data.segment_droplets import segment_droplets_to_file
+    from .data.compare_segmentation import segmentation_compare
 
     # Setup logging
     if verbose == 1:
@@ -46,6 +48,10 @@ def segment(directory, save_overlay, verbose):
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
     else:
         logging.basicConfig(level=logging.WARNING, format='%(levelname)s - %(message)s')
+    
+    if compare:
+        segmentation_compare(directory)
+        return
 
     logging.info("Extracting droplets from: %s", directory)
     segment_droplets_to_file(directory, save_overlay=save_overlay)

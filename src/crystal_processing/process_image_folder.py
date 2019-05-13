@@ -43,7 +43,7 @@ def process_image(image_path, crop_box, model, save_overlay=False):
     cropped = crop(image, crop_box)
 
     # Segment image
-    (labeled, _, _) = segment(cropped)
+    (labeled, _) = segment(cropped)
 
     # Extract individual droplets
     drop_images, regProps = extract_indiv_droplets(cropped, labeled)
@@ -130,10 +130,10 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
         idx_80 = int(len(image_list) * 0.8)
         image_80 = crop(open_grey_scale_image(image_list[idx_80]), crop_box)
         logging.info("Segmentation check requested. Segmenting image %s", image_list[idx_80])
-        labeled, _, _ = segment(image_80)
+        labeled, _ = segment(image_80)
 
         from skimage.color import label2rgb
-        overlay_image = label2rgb(labeled, image=image_80, bg_label=0)
+        overlay_image = label2rgb(labeled, image=image_80, bg_label=1)
 
         import matplotlib
         matplotlib.use('Qt4Agg', force=True)
@@ -156,7 +156,6 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
                 result = input("Please press 'y' for yes or 'n' for no\n")
 
         plt.close()
-        plt.pause(0.1)
 
     # Compute the number of batches necessary
     num_images = len(image_list)
