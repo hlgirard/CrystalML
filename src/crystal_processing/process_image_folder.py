@@ -160,24 +160,31 @@ def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay
     # Compute the number of batches necessary
     num_images = len(image_list)
     logging.info("Number of images: %d", num_images)
-    batch_size = max([1, num_images // (os.cpu_count()-1)])
-    logging.info("Batch size: %d", batch_size)
-    num_batches = int(math.ceil(num_images // batch_size))
-    logging.info("Number of batches: %d", num_batches)
+    num_cpu = os.cpu_count()
 
-    # Process all images from directory in parallel
-    data = Parallel(n_jobs=-2)(delayed(process_image_batch)(image_list[i*batch_size:min([(i+1)*batch_size, num_images])],
-                                                                       crop_box,
-                                                                       model_name,
-                                                                       i,
-                                                                       logging.root.level,
-                                                                       save_overlay)
-                                for i in range(num_batches))
+    if num_images < num_cpu:
+        logging.info("Processing on a single thread.")
+        flat_data = process_image_batch(image_list, crop_box, model_name, 0, logging.root.level, save_overlay)
+    else:
+        logging.info("Processing in parallel")
+        batch_size = max([1, num_images // (num_cpu-1)])
+        logging.info("Batch size: %d", batch_size)
+        num_batches = int(math.ceil(num_images // batch_size))
+        logging.info("Number of batches: %d", num_batches)
 
-    flat_data = [item for sublist in data for item in sublist]
+        # Process all images from directory in parallel
+        data = Parallel(n_jobs=-2)(delayed(process_image_batch)(image_list[i*batch_size:min([(i+1)*batch_size, num_images])],
+                                                                        crop_box,
+                                                                        model_name,
+                                                                        i,
+                                                                        logging.root.level,
+                                                                        save_overlay)
+                                    for i in range(num_batches))
+
+        flat_data = [item for sublist in data for item in sublist]
 
     # Make a dataframe from the data and save it to disk
-    df = pd.DataFrame(sorted(flat_data, key = lambda x: x[0]), columns=["DateTime", "Num drops", "Num clear", "Num crystal", "Image Name"])
+    df = pd.DataFrame(sorted(flat_data, key=lambda x: x[0]), columns=["DateTime", "Num drops", "Num clear", "Num crystal", "Image Name"])
     df['RelTime'] = (df['DateTime'] - df['DateTime'][0]).dt.total_seconds()
     df.to_csv(os.path.join(directory, "crystalData.csv"))
     logging.info("Saved data to disk.")
