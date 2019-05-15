@@ -8,6 +8,7 @@ import warnings
 
 from skimage import io, img_as_ubyte
 from skimage.color import label2rgb
+from cv2 import resize, INTER_AREA
 
 def save_overlay_image(path, image, reg_props, reg_labels):
     '''
@@ -36,7 +37,8 @@ def save_overlay_image(path, image, reg_props, reg_labels):
     else:
         colors = ['red', 'green']
 
-    overlay_label = label2rgb(labeled_binary, image, colors=colors, alpha=0.2, bg_label=0)
+    overlay_label = resize(label2rgb(labeled_binary, image, colors=colors, alpha=0.2, bg_label=0),
+                           None, fx=0.25, fy=0.25, interpolation=INTER_AREA)
 
     if not os.path.exists(os.path.dirname(path)):
         os.mkdir(os.path.dirname(path))
