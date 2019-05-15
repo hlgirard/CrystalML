@@ -96,14 +96,6 @@ def segment(img, exp_clip_limit=15):
         Array representing the greyscale values (0-255) of an image cropped to show only the droplets region
     exp_clip_limit: float [0-1], optional
         clip_limit parameter for adaptive equalisation
-    closing_disk_radius: int, optional
-        diamater of selection disk for the closing function
-    rm_holes_area: int, optional
-        maximum area of holes to remove
-    minima_minDist: int, optional
-        minimum distance between peaks in local minima determination
-    mask_val: float, optional
-        Masking value (0-1) for the distance plot to remove small regions. Default 0.2
 
     Returns
     -------
@@ -152,7 +144,7 @@ def segment(img, exp_clip_limit=15):
     return (segmented, segmented.max()-1)
 
 
-def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.8):
+def extract_indiv_droplets(img, labeled, border=25, ecc_cutoff=0.8, area_perc_cutoff=0.6):
     '''
     Separate the individual droplets as their own image.
 
@@ -166,6 +158,8 @@ def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.8):
         Number of pixels to add on each side of the labeled area to produce the final image.
     ecc_cutoff: float, optional
         Maximum eccentricity value of the labeled region. Regions with higher eccentricity will be ignored.
+    area_perc_cutoff: float, optional
+        Minimum area as a percentage of the mean area
 
     Returns
     -------
@@ -176,7 +170,7 @@ def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.8):
     '''
 
     # Get region props
-    reg = regionprops(labeled, coordinates='rc')
+    reg = regionprops(labeled, coordinates='rc')[1:] # First label corresponds to the background (OpenCV)
 
     # Initialize list of images
     img_list = []
@@ -185,7 +179,10 @@ def extract_indiv_droplets(img, labeled, border = 25, ecc_cutoff = 0.8):
     max_col = img.shape[1]
     max_row = img.shape[0]
 
-    reg_clean = [region for region in reg if (region.eccentricity < ecc_cutoff)]
+    # Get area cutoff
+    area_cutoff = area_perc_cutoff * np.mean([region.area for region in reg])
+
+    reg_clean = [region for region in reg if (region.eccentricity < ecc_cutoff) and region.area > area_cutoff]
 
     for region in reg_clean:
         (min_row, min_col, max_row, max_col) = region.bbox
