@@ -18,7 +18,7 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
         model = Sequential()
 
         # 1st layer convolutional
-        model.add(Conv2D(32, (3, 3), input_shape=(150, 150 , 1)))
+        model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 1)))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -50,7 +50,6 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
                 metrics=['accuracy'])
 
         ## Prepare the data
-
         batch_size = 16
 
         # this is the augmentation configuration we will use
