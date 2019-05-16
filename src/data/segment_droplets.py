@@ -4,6 +4,7 @@ Methods to segment individual droplets from an array of drops in an emulsion
 
 import os
 import warnings
+import logging
 
 import numpy as np
 
@@ -236,9 +237,11 @@ def segment_droplets_to_file(image_filename, crop_box=None, save_overlay=False):
         if not os.path.exists(out_directory):
             os.mkdir(out_directory)
 
+        logging.info("Saving segmented droplets to %s", out_directory)
+
         # Save all the images in the output directory
         for (i, img) in enumerate(drop_images):
-            name = out_directory + image_file.split('.')[0].split('/')[-1] + '_drop_' + str(i) + '.jpg'
+            name = out_directory + image_file.split('.')[0].split('/')[-1] + '_drop_' + str(i) + '.jpg' # FIXME: Make this windows compatible with os.path commands
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 io.imsave(name, img, check_contrast=False)
