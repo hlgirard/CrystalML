@@ -4,7 +4,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(name='crystalml',
-      version='0.0.3b',
+      version='0.0.4',
       description='Integrated tool to measure the nucleation rate of protein crystals. ',
       long_description=long_description,
       long_description_content_type="text/markdown",
