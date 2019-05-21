@@ -1,8 +1,11 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D
-from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense
+from tensorflow.keras.layers import Activation, Dropout, Flatten, BatchNormalization
 from tensorflow.keras.callbacks import TensorBoard
+from tensorflow.keras.constraints import unit_norm, max_norm
+from tensorflow.keras.optimizers import SGD, Adadelta
+import tensorflow.keras.backend as K
 
 from time import time
 import pkg_resources
@@ -10,40 +13,127 @@ import logging
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
+class cnn_simple:
+        @staticmethod
+        def build(width, height, depth):
+
+                model = Sequential()
+                inputShape = (height, width, depth)
+ 
+                # if we are using "channels first", update the input shape
+                if K.image_data_format() == "channels_first":
+                        inputShape = (depth, height, width)
+
+                # 1st layer convolutional
+                model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 1)))
+                model.add(Activation('relu'))
+                model.add(MaxPooling2D(pool_size=(2, 2)))
+
+                # 2nd layer convolutional
+                model.add(Conv2D(32, (3, 3)))
+                model.add(Activation('relu'))
+                model.add(MaxPooling2D(pool_size=(2, 2)))
+
+                # 3rd layer convolutional
+                model.add(Conv2D(64, (3, 3)))
+                model.add(Activation('relu'))
+                model.add(MaxPooling2D(pool_size=(2, 2)))
+
+                # Flatten
+                model.add(Flatten())
+
+                # 4th layer fully connected
+                model.add(Dense(64))
+                model.add(Activation('relu'))
+                model.add(Dropout(0.5))
+
+                # 5th layer fully connected
+                model.add(Dense(1, activation='sigmoid'))
+
+                return model
+
+class cnn_regularized:
+        @staticmethod
+        def build(width, height, depth):
+
+                model = Sequential()
+                inputShape = (height, width, depth)
+ 
+                # if we are using "channels first", update the input shape
+                if K.image_data_format() == "channels_first":
+                        inputShape = (depth, height, width)
+
+                # 1st layer convolutional
+                model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 1), activation='relu'))
+                model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+                # 2nd layer convolutional
+                model.add(Conv2D(32, (3, 3), activation='relu', kernel_constraint=max_norm(3., axis=[0, 1, 2])))
+                model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+                # 3rd layer convolutional
+                model.add(Conv2D(64, (3, 3), activation='relu', kernel_constraint=max_norm(3., axis=[0, 1, 2])))
+                model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+                # Flatten
+                model.add(Flatten())
+
+                # 4th layer fully connected
+                model.add(Dense(64, activation='relu', kernel_constraint=unit_norm()))
+                model.add(Dropout(0.5))
+
+                # 5th layer fully connected
+                model.add(Dense(1, activation='sigmoid'))
+
+                return model
+
+class cnn_regularized_dropout:
+        @staticmethod
+        def build(width, height, depth):
+
+                model = Sequential()
+                inputShape = (height, width, depth)
+ 
+                # if we are using "channels first", update the input shape
+                if K.image_data_format() == "channels_first":
+                        inputShape = (depth, height, width)     
+
+                # 1st layer convolutional
+                model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 1), activation='relu'))
+                model.add(Dropout(0.2))
+                model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+                # 2nd layer convolutional
+                model.add(Conv2D(32, (3, 3), activation='relu', kernel_constraint=max_norm(3., axis=[0, 1, 2])))
+                model.add(Dropout(0.2))
+
+                model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+                # 3rd layer convolutional
+                model.add(Conv2D(64, (3, 3), activation='relu', kernel_constraint=max_norm(3., axis=[0, 1, 2])))
+                model.add(Dropout(0.2))
+                model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+                # Flatten
+                model.add(Flatten())
+
+                # 4th layer fully connected
+                model.add(Dense(64, activation='relu', kernel_constraint=unit_norm()))
+                model.add(Dropout(0.5))
+
+                # 5th layer fully connected
+                model.add(Dense(1, activation='sigmoid'))
+
+                return model
+
 def train_cnn_simple_from_directory(training_directory, bTensorboard):
 
         logging.info("Starting training of simple CNN from directory %s", training_directory)
 
         ## Define the model
-        model = Sequential()
+        model = cnn_regularized.build(150, 150, 1)
 
-        # 1st layer convolutional
-        model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 1)))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-
-        # 2nd layer convolutional
-        model.add(Conv2D(32, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-
-        # 3rd layer convolutional
-        model.add(Conv2D(64, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-
-        # Flatten
-        model.add(Flatten())
-
-        # 4th layer fully connected
-        model.add(Dense(64))
-        model.add(Activation('relu'))
-        model.add(Dropout(0.5))
-
-        # 5th layer fully connected
-        model.add(Dense(1))
-        model.add(Activation('sigmoid'))
-
+        #optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False)
 
         model.compile(loss='binary_crossentropy',
                 optimizer='rmsprop',
@@ -88,7 +178,7 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
         model.summary()
 
         if bTensorboard:
-                log_dir = "logs/{}".format(time())
+                log_dir = "logs/{}".format("cnn_simple_" + str(time()))
                 logging.info("Saving tensorboard loggs to: %s", log_dir)
                 callbacks = [TensorBoard(log_dir=log_dir)]
         else:

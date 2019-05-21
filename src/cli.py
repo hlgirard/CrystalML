@@ -58,10 +58,11 @@ def segment(directory, compare, save_overlay, verbose):
 
 @cli.command()
 @click.argument('directory', type=click.Path(exists=True, file_okay=False))
-@click.option('-m', '--model', required=True, type=click.Choice(['svm', 'cnn', 'cnn-transfer']), help="Type of model to train")
+@click.option('-m', '--model', required=True, type=click.Choice(['cnn', 'cnn-transfer']), help="Type of model to train")
 @click.option('-tb', '--tensorboard', is_flag=True, help="Save logs for tensorboard visualization")
 @click.option('-v', '--verbose', count=True, help="Increase verbosity level")
-def train(directory, model, verbose, tensorboard):
+@click.option('-l', '--layer', default=1, help="For transfer learning, how many layers to skim from the top.")
+def train(directory, model, verbose, tensorboard, layer):
     '''Train a model from a directory of labeled images'''
 
     training_directory = directory
@@ -78,8 +79,6 @@ def train(directory, model, verbose, tensorboard):
         from .models.train.cnn_simple import train_cnn_simple_from_directory
         train_cnn_simple_from_directory(training_directory, tensorboard)
 
-    elif model == "svm":
-        raise NotImplementedError("Training SVM from the command line is not implemented yet.")
-
     elif model == "cnn-transfer":
-        raise NotImplementedError("Training CNN-transfer from the command line is not implemented yet.")
+        from .models.train.cnn_transfer import train_cnn_transfer_from_directory
+        train_cnn_transfer_from_directory(training_directory, tensorboard, -1 * layer)
