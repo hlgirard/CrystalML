@@ -51,6 +51,13 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
 
         ## Prepare the data
         batch_size = 16
+        num_samples = sum([len(os.listdir(os.path.join(training_directory, categoryDir))) for categoryDir in os.listdir(training_directory) if os.path.isdir(os.path.join(training_directory, categoryDir))])
+        num_training = int(0.8 * num_samples)
+        num_validation = num_samples - num_training
+
+        logging.info("Number of labeled images: %d", num_samples)
+        logging.info("Number of training samples: %d", num_training)
+        logging.info("Number of validation samples: %d", num_validation)
 
         # this is the augmentation configuration we will use
         train_datagen = ImageDataGenerator(
@@ -65,7 +72,7 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
                 training_directory,  # this is the target directory
                 target_size=(150, 150),  # all images will be resized to 150x225
                 batch_size=batch_size,
-                color_mode ='grayscale',
+                color_mode='grayscale',
                 class_mode='binary', # since we use binary_crossentropy loss, we need binary labels
                 subset='training')
 
@@ -83,15 +90,18 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
         if bTensorboard:
                 log_dir = "logs/{}".format(time())
                 logging.info("Saving tensorboard loggs to: %s", log_dir)
-                tensorboard = TensorBoard(log_dir=log_dir)
+                callbacks = [TensorBoard(log_dir=log_dir)]
+        else:
+                callbacks = None
 
         training_history = model.fit_generator(
                 train_generator,
-                steps_per_epoch=2000 // batch_size,
+                steps_per_epoch=num_training // batch_size,
                 epochs=50,
                 validation_data=validation_generator,
-                validation_steps=800 // batch_size,
-                callbacks=[tensorboard] if tensorboard else None)
+                validation_steps=num_validation // batch_size,
+                callbacks=callbacks
+        )
 
         # Save Model to JSON
         model_json = model.to_json()
