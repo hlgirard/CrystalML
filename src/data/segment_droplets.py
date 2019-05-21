@@ -232,7 +232,7 @@ def segment_droplets_to_file(image_filename, crop_box=None, save_overlay=False):
         drop_images, _ = extract_indiv_droplets(cropped, labeled)
 
         # Output folder has the same name as the image by default
-        out_directory = image_file.split('.')[0] + '/'
+        out_directory = image_file.split('.')[0]
 
         if not os.path.exists(out_directory):
             os.mkdir(out_directory)
@@ -241,7 +241,7 @@ def segment_droplets_to_file(image_filename, crop_box=None, save_overlay=False):
 
         # Save all the images in the output directory
         for (i, img) in enumerate(drop_images):
-            name = out_directory + image_file.split('.')[0].split('/')[-1] + '_drop_' + str(i) + '.jpg' # FIXME: Make this windows compatible with os.path commands
+            name = os.path.join(out_directory, os.path.basename(image_file).split('.')[0] + '_drop_' + str(i) + '.jpg')
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 io.imsave(name, img, check_contrast=False)
