@@ -53,6 +53,10 @@ class cnn_simple:
                 return model
 
 class cnn_regularized:
+        '''
+        Regularization of the weights is added to each layer.
+        No measurable improvement in accuracy but significantly larger run time.
+        '''
         @staticmethod
         def build(width, height, depth):
 
@@ -87,7 +91,7 @@ class cnn_regularized:
 
                 return model
 
-class cnn_regularized_dropout:
+class cnn_dropout:
         @staticmethod
         def build(width, height, depth):
 
@@ -96,7 +100,7 @@ class cnn_regularized_dropout:
  
                 # if we are using "channels first", update the input shape
                 if K.image_data_format() == "channels_first":
-                        inputShape = (depth, height, width)     
+                        inputShape = (depth, height, width)    
 
                 # 1st layer convolutional
                 model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 1), activation='relu'))
@@ -104,13 +108,13 @@ class cnn_regularized_dropout:
                 model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
                 # 2nd layer convolutional
-                model.add(Conv2D(32, (3, 3), activation='relu', kernel_constraint=max_norm(3., axis=[0, 1, 2])))
+                model.add(Conv2D(32, (3, 3), activation='relu'))
                 model.add(Dropout(0.2))
 
                 model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
                 # 3rd layer convolutional
-                model.add(Conv2D(64, (3, 3), activation='relu', kernel_constraint=max_norm(3., axis=[0, 1, 2])))
+                model.add(Conv2D(64, (3, 3), activation='relu'))
                 model.add(Dropout(0.2))
                 model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
@@ -118,7 +122,7 @@ class cnn_regularized_dropout:
                 model.add(Flatten())
 
                 # 4th layer fully connected
-                model.add(Dense(64, activation='relu', kernel_constraint=unit_norm()))
+                model.add(Dense(64, activation='relu'))
                 model.add(Dropout(0.5))
 
                 # 5th layer fully connected
@@ -131,7 +135,7 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
         logging.info("Starting training of simple CNN from directory %s", training_directory)
 
         ## Define the model
-        model = cnn_regularized.build(150, 150, 1)
+        model = cnn_dropout.build(150, 150, 1)
 
         #optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False)
 
