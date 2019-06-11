@@ -55,7 +55,7 @@ class cnn_simple:
 class cnn_regularized:
         '''
         Regularization of the weights is added to each layer.
-        No measurable improvement in accuracy but significantly larger run time.
+        No measurable improvement in accuracy but significantly longer run time.
         '''
         @staticmethod
         def build(width, height, depth):
@@ -92,6 +92,10 @@ class cnn_regularized:
                 return model
 
 class cnn_dropout:
+        '''
+        Dropouts added to each layer to prevent overfitting.
+        Some improvement in testing loss but significantly longer run time.
+        '''
         @staticmethod
         def build(width, height, depth):
 
@@ -100,7 +104,7 @@ class cnn_dropout:
  
                 # if we are using "channels first", update the input shape
                 if K.image_data_format() == "channels_first":
-                        inputShape = (depth, height, width)    
+                        inputShape = (depth, height, width)
 
                 # 1st layer convolutional
                 model.add(Conv2D(32, (3, 3), input_shape=(150, 150, 1), activation='relu'))
@@ -135,7 +139,7 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
         logging.info("Starting training of simple CNN from directory %s", training_directory)
 
         ## Define the model
-        model = cnn_dropout.build(150, 150, 1)
+        model = cnn_simple.build(150, 150, 1)
 
         #optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False)
 
@@ -177,7 +181,8 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
                 batch_size=batch_size,
                 color_mode='grayscale',
                 class_mode='binary',
-                subset='validation')
+                subset='validation',
+                shuffle=False)
 
         model.summary()
 
@@ -207,3 +212,17 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
         model_weights_path = pkg_resources.resource_filename('models', "cnn-simple-model-{}.h5".format(time()))
         logging.info("Saving model weights to %s", model_weights_path)
         model.save_weights(model_weights_path)
+
+        # Display confusion matrix
+        try:
+                from sklearn.metrics import classification_report, confusion_matrix
+                import numpy as np
+                Y_pred = model.predict_generator(validation_generator, num_validation // batch_size+1)
+                y_pred = np.argmax(Y_pred, axis=1)
+                print('-------- Confusion Matrix --------')
+                print(confusion_matrix(validation_generator.classes, y_pred))
+                print('-------- Classification Report --------')
+                target_names = ['Clear', 'Crystal']
+                print(classification_report(validation_generator.classes, y_pred, target_names=target_names))
+        except ImportError:
+                logging.info("sklearn is required to print confucion matrix and classification report.")

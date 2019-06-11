@@ -62,7 +62,8 @@ def segment(directory, compare, save_overlay, verbose):
 @click.option('-tb', '--tensorboard', is_flag=True, help="Save logs for tensorboard visualization")
 @click.option('-v', '--verbose', count=True, help="Increase verbosity level")
 @click.option('-l', '--layer', default=1, help="For transfer learning, how many layers to skim from the top.")
-def train(directory, model, verbose, tensorboard, layer):
+@click.option('-f', '--frozen', default=0, help="For transfer learning, how many layers to unfreeze at the top.")
+def train(directory, model, verbose, tensorboard, layer, frozen):
     '''Train a model from a directory of labeled images'''
 
     training_directory = directory
@@ -81,4 +82,4 @@ def train(directory, model, verbose, tensorboard, layer):
 
     elif model == "cnn-transfer":
         from .models.train.cnn_transfer import train_cnn_transfer_from_directory
-        train_cnn_transfer_from_directory(training_directory, tensorboard, -1 * layer)
+        train_cnn_transfer_from_directory(training_directory, tensorboard, -1 * layer, frozen)
