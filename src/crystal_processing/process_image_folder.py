@@ -114,7 +114,9 @@ def process_image_batch(image_list, crop_box, model_name, batch_number=0, verbos
 def process_image_folder(directory, crop_box=None, show_plot=False, save_overlay=False, show_segmentation=False):
 
     # List images in directory
-    image_list = [os.path.join(directory, image_path) for image_path in os.listdir(directory) if image_path.endswith('.JPG')]
+    supported_extensions = ['jpg', 'png', 'gif', 'jpeg ', 'eps', 'bmp', 'tiff', 'bmp',
+                                     'icns', 'ico', 'spi',]
+    image_list = [os.path.join(directory, image_path) for image_path in os.listdir(directory) if os.path.splitext(image_path)[1][1:].lower() in supported_extensions]
 
     # Define the model path
     model_name = "cnn-simple-model.json"
