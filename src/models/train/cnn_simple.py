@@ -163,18 +163,16 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
                 validation_split=0.2)
 
 
-        # this is a generator that will read pictures found in
-        # subfolers of 'data/train', and indefinitely generate
-        # batches of augmented image data
+        # Training generator
         train_generator = train_datagen.flow_from_directory(
-                training_directory,  # this is the target directory
-                target_size=(150, 150),  # all images will be resized to 150x225
+                training_directory,
+                target_size=(150, 150),  # all images will be resized to 150x150
                 batch_size=batch_size,
                 color_mode='grayscale',
-                class_mode='binary', # since we use binary_crossentropy loss, we need binary labels
+                class_mode='binary',
                 subset='training')
 
-        # this is a similar generator, for validation data
+        # Validation generator
         validation_generator = train_datagen.flow_from_directory(
                 training_directory,
                 target_size=(150, 150),
@@ -208,7 +206,8 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
         logging.info("Saving model JSON file to: %s", model_path)
         with open(model_path, "w") as json_file:
                 json_file.write(model_json)
-        # Save weigths
+        
+        # Save weights
         model_weights_path = pkg_resources.resource_filename('models', "cnn-simple-model-{}.h5".format(time()))
         logging.info("Saving model weights to %s", model_weights_path)
         model.save_weights(model_weights_path)
@@ -225,4 +224,4 @@ def train_cnn_simple_from_directory(training_directory, bTensorboard):
                 target_names = ['Clear', 'Crystal']
                 print(classification_report(validation_generator.classes, y_pred, target_names=target_names))
         except ImportError:
-                logging.info("sklearn is required to print confucion matrix and classification report.")
+                logging.info("sklearn is required to print confusion matrix and classification report.")

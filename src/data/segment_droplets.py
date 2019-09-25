@@ -34,7 +34,7 @@ def segment_skimage(img, exp_clip_limit=0.06, closing_disk_radius=4, rm_holes_ar
     img: numpy.ndarray
         Array representing the greyscale values (0-255) of an image cropped to show only the droplets region
     exp_clip_limit: float [0-1], optional
-        clip_limit parameter for adaptive equalisation
+        clip_limit parameter for adaptive equalization
     closing_disk_radius: int, optional
         diamater of selection disk for the closing function
     rm_holes_area: int, optional
@@ -96,7 +96,7 @@ def segment(img, exp_clip_limit=15):
     img: numpy.ndarray
         Array representing the greyscale values (0-255) of an image cropped to show only the droplets region
     exp_clip_limit: float [0-1], optional
-        clip_limit parameter for adaptive equalisation
+        clip_limit parameter for adaptive equalization
 
     Returns
     -------

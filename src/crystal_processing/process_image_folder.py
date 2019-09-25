@@ -25,7 +25,7 @@ def process_image(image_path, crop_box, model, save_overlay=False):
     crop_box: (minRow, maxRow, minCol, maxCol)
         Cropping box to select the region of interest
     model: tensorflow model
-        Instance of a tensorflow model trained to discriminate droples containing crystals vs. clear
+        Instance of a tensorflow model trained to discriminate droplets containing crystals vs. clear
     save_overlay: bool, optional
         Save an image with green / red overlays for drops containing crystals / empty to `image_path / overlay`
 
