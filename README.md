@@ -9,10 +9,10 @@
 
 Integrated tool to measure the nucleation rate of protein crystals from the crystallization kinetics of an array of independent identical droplets.
 
-From a directory containing a time-series of images of mutliple droplets, the tool segments individual droplet and uses a pre-trained CNN model to determine the presence or absence of crystals in each drop.
+From a directory containing a time-series of images of multiple droplets, the tool segments individual droplet and uses a pre-trained CNN model to determine the presence or absence of crystals in each drop.
 The nucleation rate is evaluated from the rate of decay of the proportion of drops that _do not_ exhibit visible crystals.
 
-![Schematic](docs/CrystalML_demo.jpg)
+![Schematic](docs/crystalml_schem.jpg)
 
 ## Installation
 
@@ -43,7 +43,7 @@ pip install .
 
 ### Quickstart
 
-A time series of images of an emulsion of protein-ladden droplets must be stored in a directory prior to usage of CrystalML
+A time series of images of an emulsion of protein-laden droplets must be stored in a directory prior to usage of CrystalML
 The application can then be used to process the images as follows:
 ```
 crystalml process --save-plot path/to/directory
@@ -56,7 +56,7 @@ The program saves a `.csv` file at the root of that directory with the name of e
 
 #### Arguments
 
-- `-c`, `--check-segmentation` displays the result of segmenting an image (selected at approximately 80% of the time series) to verify that the segementation algorithm works well before processing.
+- `-c`, `--check-segmentation` displays the result of segmenting an image (selected at approximately 80% of the time series) to verify that the segmentation algorithm works well before processing.
 - `-o`, `--save-overlay` resaves all images in the directory with an overlay showing detected droplets in red (no crystal) or green (crystal detected) for process control.
 - `-p`, `--save-plot` generates and saves plots of crystal contents over time
 - `-v`, `--verbose` increases the verbosity level
@@ -80,7 +80,7 @@ The `train` command is used to train the machine learning models used to label t
 - `-tb`, `--tensorboard` saves logs for tensorboard visualization in `<cwd>/logs`
 - `-v`, `--verbose` increases the verbosity level
 
-## Repository strutcture
+## Repository structure
 
 - `models`: pre-trained machine learning models for crystal presence discrimination
 - `notebooks`: jupyer notebooks evaluating different image segmentation strategies
