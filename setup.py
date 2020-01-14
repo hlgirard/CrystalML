@@ -4,7 +4,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(name='crystalml',
-      version='0.1',
+      version='0.1.1',
       description='Integrated tool to measure the nucleation rate of protein crystals. ',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -25,7 +25,7 @@ setup(name='crystalml',
           'pkginfo>=1.4.2',
           'pandas',
           'joblib',
-          'pillow',
+          'pillow>=6.2.0',
           'plotly',
           'scikit-image',
           'setuptools',
