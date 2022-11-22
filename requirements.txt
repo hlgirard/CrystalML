@@ -8,7 +8,7 @@ opencv-python==4.0.0.21
 pandas==0.23.4
 Pygments
 joblib>=0.13.2
-Pillow==6.2.0
+Pillow==9.3.0
 plotly==3.6.1
 setuptools
 scikit-image==0.15.0
